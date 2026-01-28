@@ -133,5 +133,8 @@ app.*.map.json
 firebase.json
 lib/firebase_options.dart
 
+# Generated Localization
+lib/l10n/generated/
+
 test/.test_runner.dart
 web/__/firebase/init.js

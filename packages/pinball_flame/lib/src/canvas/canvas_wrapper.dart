@@ -194,4 +194,14 @@ class CanvasWrapper implements Canvas {
   void restoreToCount(int count) {
     throw UnimplementedError();
   }
+
+  @override
+  void clipRSuperellipse(covariant dynamic rsuperellipse,
+          {bool doAntiAlias = true}) =>
+      (canvas as dynamic)
+          .clipRSuperellipse(rsuperellipse, doAntiAlias: doAntiAlias);
+
+  @override
+  void drawRSuperellipse(covariant dynamic rsuperellipse, Paint paint) =>
+      (canvas as dynamic).drawRSuperellipse(rsuperellipse, paint);
 }
