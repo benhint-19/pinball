@@ -13,7 +13,7 @@ dependencies:
   flame_forge2d: ^0.18.1
   flutter:
     sdk: flutter
-  intl: ^0.19.0
+  intl: ^0.20.2
   pinball_audio:
     path: ../pinball_audio
   pinball_flame:
@@ -100,4 +100,5 @@ flutter:
 flutter_gen:
   line_length: 80
   assets:
-    package_parameter_enabled: true
+    outputs:
+      package_parameter_enabled: true
