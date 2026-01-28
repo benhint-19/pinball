@@ -152,6 +152,10 @@
   "@loadingApp": {
     "description": "Loading message shown when the app is downloading assets"
   },
+  "loading": "Loading",
+  "@loading": {
+    "description": "Text shown to indicate loading times"
+  },
   "replay": "Replay",
   "@replay": {
     "description": "Text displayed on the share page for replay button"

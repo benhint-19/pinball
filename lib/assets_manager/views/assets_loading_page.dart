@@ -27,10 +27,24 @@ class AssetsLoadingPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Assets.images.loadingGame.ioPinball.image(),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
+            Text(
+              'SEEKER PINBALL',
+              style: displayLarge?.copyWith(
+                color: PinballColors.white,
+                fontSize: 32,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Image.asset(
+              'assets/images/loading_game/solana_logo.png',
+              height: 50,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 20),
             AnimatedEllipsisText(
               l10n.loading,
-              style: displayLarge,
+              style: displayLarge?.copyWith(fontSize: 20),
             ),
             const SizedBox(height: 40),
             FractionallySizedBox(
