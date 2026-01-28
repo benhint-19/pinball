@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pinball/assets_manager/assets_manager.dart';
-import 'package:pinball/gen/gen.dart';
 import 'package:pinball/l10n/l10n.dart';
 import 'package:pinball_ui/pinball_ui.dart';
 
@@ -23,28 +22,17 @@ class AssetsLoadingPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Assets.images.loadingGame.ioPinball.image(),
-            ),
-            const SizedBox(height: 20),
             Text(
               'SEEKER PINBALL',
               style: displayLarge?.copyWith(
                 color: PinballColors.white,
-                fontSize: 32,
+                fontSize: 42,
               ),
-            ),
-            const SizedBox(height: 10),
-            Image.asset(
-              'assets/images/loading_game/solana_logo.png',
-              height: 50,
-              fit: BoxFit.contain,
             ),
             const SizedBox(height: 20),
             AnimatedEllipsisText(
               l10n.loading,
-              style: displayLarge?.copyWith(fontSize: 20),
+              style: displayLarge?.copyWith(fontSize: 24),
             ),
             const SizedBox(height: 40),
             FractionallySizedBox(
