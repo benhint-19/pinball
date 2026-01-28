@@ -29,4 +29,6 @@ flutter pub run build_runner build --delete-conflicting-outputs
 (cd packages/pinball_theme && flutter pub run build_runner build --delete-conflicting-outputs)
 
 # Build Web
-flutter build web --release --no-wasm-dry-run
+# Using --base-href / to ensure index.html placeholders are replaced.
+# Using --web-renderer html for maximum compatibility if canvaskit fails.
+flutter build web --release --no-wasm-dry-run --base-href / --web-renderer html

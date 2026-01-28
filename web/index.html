@@ -18,6 +18,14 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.error('Global Error Detected:', message, 'at', source, ':', lineno, ':', colno, error);
+    };
+    window.onunhandledrejection = function (event) {
+      console.error('Unhandled Promise Rejection:', event.reason);
+    };
+  </script>
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description"
     content="Come play Pinball with your favorite Google Developer Mascots! Built with Flutter & Firebase for Google I/O 2022.">
@@ -103,7 +111,7 @@
         // Wait for registration to finish before dropping the <script> tag.
         // Otherwise, the browser will load the script multiple times,
         // potentially different versions.
-        var serviceWorkerUrl = 'flutter_service_worker.js?v={{flutter_service_worker_version}}"';
+        var serviceWorkerUrl = 'flutter_service_worker.js?v={{flutter_service_worker_version}}';
         navigator.serviceWorker.register(serviceWorkerUrl)
           .then((reg) => {
             function waitForActivation(serviceWorker) {
@@ -118,7 +126,7 @@
               // No active web worker and we have installed or are installing
               // one for the first time. Simply wait for it to activate.
               waitForActivation(reg.installing || reg.waiting);
-            } else if (!reg.active.scriptURL.endsWith("{{flutter_service_worker_version}}")) {
+            } else if (reg.active && !reg.active.scriptURL.endsWith("{{flutter_service_worker_version}}")) {
               // When the app updates the service worker version changes, so we
               // need to ask the service worker to update.
               console.log('New service worker available.');
@@ -129,6 +137,9 @@
               console.log('Loading app from service worker.');
               loadMainDartJs();
             }
+          }).catch(function (e) {
+            console.error('Service worker registration failed:', e);
+            loadMainDartJs();
           });
 
         // If service worker doesn't succeed in a reasonable amount of time,
