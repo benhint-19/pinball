@@ -29,7 +29,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 (cd packages/pinball_theme && flutter pub run build_runner build --delete-conflicting-outputs)
 
 # Build Web
-# Using --base-href=/ to ensure index.html placeholders are replaced.
 # Note: --web-renderer was removed in Flutter 3.38+, renderer is auto-selected.
+# Flutter replaces $FLUTTER_BASE_HREF with / by default.
 flutter --version
-flutter build web --release --no-wasm-dry-run --base-href=/
+flutter build web --release --no-wasm-dry-run
