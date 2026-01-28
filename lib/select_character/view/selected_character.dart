@@ -84,15 +84,29 @@ class _SelectedCharacterState extends State<SelectedCharacter>
   }
 
   void _setupCharacterAnimation() {
+    final int columns;
+    final int rows;
+    final int to;
+
+    if (widget.currentCharacter is DevTheme) {
+      columns = 15;
+      rows = 6;
+      to = 15;
+    } else {
+      columns = 12;
+      rows = 6;
+      to = 12;
+    }
+
     final spriteSheet = SpriteSheet.fromColumnsAndRows(
       image: Flame.images.fromCache(widget.currentCharacter.animation.keyName),
-      columns: 8,
-      rows: 1,
+      columns: columns,
+      rows: rows,
     );
     final animation = spriteSheet.createAnimation(
       row: 0,
       stepTime: 1 / 12,
-      to: spriteSheet.rows * spriteSheet.columns,
+      to: to,
     );
     if (_controller != null) _controller?.dispose();
     _controller = SpriteAnimationController(
