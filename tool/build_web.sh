@@ -30,5 +30,6 @@ flutter pub run build_runner build --delete-conflicting-outputs
 
 # Build Web
 # Using --base-href / to ensure index.html placeholders are replaced.
-# Using --web-renderer html for maximum compatibility if canvaskit fails.
-flutter build web --release --no-wasm-dry-run --base-href / --web-renderer html
+# Using --web-renderer=html for maximum compatibility.
+flutter --version
+flutter build web --release --no-wasm-dry-run --base-href=/ --web-renderer=html
