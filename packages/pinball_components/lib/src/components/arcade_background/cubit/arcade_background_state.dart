@@ -6,7 +6,7 @@ class ArcadeBackgroundState extends Equatable {
   const ArcadeBackgroundState({required this.characterTheme});
 
   const ArcadeBackgroundState.initial()
-      : this(characterTheme: const DashTheme());
+      : this(characterTheme: const DevTheme());
 
   final CharacterTheme characterTheme;
 

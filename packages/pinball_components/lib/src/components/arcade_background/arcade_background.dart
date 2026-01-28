@@ -84,7 +84,7 @@ class ArcadeBackgroundSpriteComponent extends SpriteComponent
     await super.onLoad();
     final sprite = Sprite(
       gameRef.images
-          .fromCache(_assetPath ?? theme.Assets.images.dash.background.keyName),
+          .fromCache(_assetPath ?? theme.Assets.images.dev.background.keyName),
     );
     this.sprite = sprite;
     size = sprite.originalSize / 10;

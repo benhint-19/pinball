@@ -60,7 +60,7 @@ void main() {
             (score) => LeaderboardEntryData(
               playerInitials: 'user$score',
               score: score,
-              character: CharacterType.dash,
+              character: CharacterType.dev,
             ),
           )
           .toList();
@@ -73,7 +73,7 @@ void main() {
         queryDocumentSnapshots = top10Scores.map((score) {
           final queryDocumentSnapshot = _MockQueryDocumentSnapshot();
           when(queryDocumentSnapshot.data).thenReturn(<String, dynamic>{
-            'character': 'dash',
+            'character': 'dev',
             'playerInitials': 'user$score',
             'score': score,
           });
@@ -147,7 +147,7 @@ void main() {
       final leaderboardEntry = LeaderboardEntryData(
         playerInitials: 'ABC',
         score: entryScore,
-        character: CharacterType.dash,
+        character: CharacterType.dev,
       );
       const entryDocumentId = 'id$entryScore';
 
@@ -160,7 +160,7 @@ void main() {
         queryDocumentSnapshots = leaderboardScores.map((score) {
           final queryDocumentSnapshot = _MockQueryDocumentSnapshot();
           when(queryDocumentSnapshot.data).thenReturn(<String, dynamic>{
-            'character': 'dash',
+            'character': 'dev',
             'playerInitials': 'AAA',
             'score': score,
           });
@@ -227,7 +227,7 @@ void main() {
         final queryDocumentSnapshots = leaderboardScores.map((score) {
           final queryDocumentSnapshot = _MockQueryDocumentSnapshot();
           when(queryDocumentSnapshot.data).thenReturn(<String, dynamic>{
-            'character': 'dash',
+            'character': 'dev',
             'playerInitials': 'AAA',
             'score': score,
           });
@@ -249,7 +249,7 @@ void main() {
         final newScore = LeaderboardEntryData(
           playerInitials: 'ABC',
           score: 15000,
-          character: CharacterType.android,
+          character: CharacterType.miner,
         );
         final leaderboardScores = [
           10000,
@@ -267,7 +267,7 @@ void main() {
         final queryDocumentSnapshots = leaderboardScores.map((score) {
           final queryDocumentSnapshot = _MockQueryDocumentSnapshot();
           when(queryDocumentSnapshot.data).thenReturn(<String, dynamic>{
-            'character': 'dash',
+            'character': 'dev',
             'playerInitials': 'AAA',
             'score': score,
           });

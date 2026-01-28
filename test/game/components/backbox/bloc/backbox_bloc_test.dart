@@ -46,11 +46,11 @@ void main() {
       act: (bloc) => bloc.add(
         PlayerInitialsRequested(
           score: 100,
-          character: AndroidTheme(),
+          character: MinerTheme(),
         ),
       ),
       expect: () => [
-        InitialsFormState(score: 100, character: AndroidTheme()),
+        InitialsFormState(score: 100, character: MinerTheme()),
       ],
     );
 
@@ -64,7 +64,7 @@ void main() {
               LeaderboardEntryData(
                 playerInitials: 'AAA',
                 score: 10,
-                character: CharacterType.dash,
+                character: CharacterType.dev,
               ),
             ),
           ).thenAnswer((_) async {});
@@ -95,7 +95,7 @@ void main() {
               LeaderboardEntryData(
                 playerInitials: 'AAA',
                 score: 10,
-                character: CharacterType.dash,
+                character: CharacterType.dev,
               ),
             ),
           ).thenThrow(Exception('Error'));
@@ -113,7 +113,7 @@ void main() {
         ),
         expect: () => [
           LoadingState(),
-          InitialsFailureState(score: 10, character: DashTheme()),
+          InitialsFailureState(score: 10, character: DevTheme()),
         ],
       );
     });

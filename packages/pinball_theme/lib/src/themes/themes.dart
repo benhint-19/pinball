@@ -1,5 +1,5 @@
-export 'android_theme.dart';
+export 'miner_theme.dart';
 export 'character_theme.dart';
-export 'dash_theme.dart';
-export 'dino_theme.dart';
-export 'sparky_theme.dart';
+export 'dev_theme.dart';
+export 'degen_theme.dart';
+export 'shiba_theme.dart';

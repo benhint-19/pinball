@@ -113,7 +113,7 @@ class BallSpriteComponent extends SpriteComponent
     await super.onLoad();
     final sprite = Sprite(
       gameRef.images
-          .fromCache(_assetPath ?? theme.Assets.images.dash.ball.keyName),
+          .fromCache(_assetPath ?? theme.Assets.images.dev.ball.keyName),
     );
     this.sprite = sprite;
     size = sprite.originalSize / 12.5;

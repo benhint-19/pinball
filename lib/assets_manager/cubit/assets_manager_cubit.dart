@@ -37,7 +37,13 @@ class AssetsManagerCubit extends Cubit<AssetsManagerState> {
     _triggerLoad = () async {
       if (loadables.isEmpty) return;
       final loadable = loadables.removeAt(0);
-      await loadable();
+      try {
+        await loadable();
+      } catch (e) {
+        // Log but don't crash - some assets may fail to load (e.g., audio on web)
+        // ignore: avoid_print
+        print('Asset failed to load: $e');
+      }
       _triggerLoad();
       emit(state.copyWith(loaded: state.loaded + 1));
     };

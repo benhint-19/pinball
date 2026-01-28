@@ -6,13 +6,13 @@ void main() {
     const data = <String, dynamic>{
       'playerInitials': 'ABC',
       'score': 1500,
-      'character': 'dash',
+      'character': 'dev',
     };
 
     const leaderboardEntry = LeaderboardEntryData(
       playerInitials: 'ABC',
       score: 1500,
-      character: CharacterType.dash,
+      character: CharacterType.dev,
     );
 
     test('can be instantiated', () {

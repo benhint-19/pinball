@@ -5,17 +5,17 @@ part 'leaderboard_entry_data.g.dart';
 
 /// Google character type associated with a [LeaderboardEntryData].
 enum CharacterType {
-  /// Dash character.
-  dash,
+  /// Dev character.
+  dev,
 
-  /// Sparky character.
-  sparky,
+  /// Shiba character.
+  shiba,
 
-  /// Android character.
-  android,
+  /// Miner character.
+  miner,
 
-  /// Dino character.
-  dino,
+  /// Degen character.
+  degen,
 }
 
 /// {@template leaderboard_entry_data}
@@ -72,7 +72,7 @@ class LeaderboardEntryData extends Equatable {
   static const empty = LeaderboardEntryData(
     playerInitials: '',
     score: 0,
-    character: CharacterType.dash,
+    character: CharacterType.dev,
   );
 
   @override

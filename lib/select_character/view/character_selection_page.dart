@@ -69,15 +69,15 @@ class _CharacterGrid extends StatelessWidget {
               child: Column(
                 children: [
                   _Character(
-                    key: const Key('dash_character_selection'),
-                    character: const DashTheme(),
-                    isSelected: state.isDashSelected,
+                    key: const Key('dev_character_selection'),
+                    character: const DevTheme(),
+                    isSelected: state.isDevSelected,
                   ),
                   const SizedBox(height: 6),
                   _Character(
-                    key: const Key('android_character_selection'),
-                    character: const AndroidTheme(),
-                    isSelected: state.isAndroidSelected,
+                    key: const Key('miner_character_selection'),
+                    character: const MinerTheme(),
+                    isSelected: state.isMinerSelected,
                   ),
                 ],
               ),
@@ -87,15 +87,15 @@ class _CharacterGrid extends StatelessWidget {
               child: Column(
                 children: [
                   _Character(
-                    key: const Key('sparky_character_selection'),
-                    character: const SparkyTheme(),
-                    isSelected: state.isSparkySelected,
+                    key: const Key('shiba_character_selection'),
+                    character: const ShibaTheme(),
+                    isSelected: state.isShibaSelected,
                   ),
                   const SizedBox(height: 6),
                   _Character(
-                    key: const Key('dino_character_selection'),
-                    character: const DinoTheme(),
-                    isSelected: state.isDinoSelected,
+                    key: const Key('degen_character_selection'),
+                    character: const DegenTheme(),
+                    isSelected: state.isDegenSelected,
                   ),
                 ],
               ),

@@ -21,8 +21,8 @@ Map<String, dynamic> _$LeaderboardEntryToJson(LeaderboardEntryData instance) =>
     };
 
 const _$CharacterTypeEnumMap = {
-  CharacterType.dash: 'dash',
-  CharacterType.sparky: 'sparky',
-  CharacterType.android: 'android',
-  CharacterType.dino: 'dino',
+  CharacterType.dev: 'dev',
+  CharacterType.shiba: 'shiba',
+  CharacterType.miner: 'miner',
+  CharacterType.degen: 'degen',
 };

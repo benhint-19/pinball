@@ -19,10 +19,10 @@ class _TestGame extends Forge2DGame {
   Future<void> onLoad() async {
     images.prefix = '';
     await images.loadAll([
-      theme.Assets.images.dash.ball.keyName,
-      theme.Assets.images.dino.ball.keyName,
-      theme.Assets.images.dash.background.keyName,
-      theme.Assets.images.dino.background.keyName,
+      theme.Assets.images.dev.ball.keyName,
+      theme.Assets.images.degen.ball.keyName,
+      theme.Assets.images.dev.background.keyName,
+      theme.Assets.images.degen.background.keyName,
     ]);
   }
 
@@ -104,13 +104,13 @@ void main() {
             platformHelper: platformHelper,
           );
 
-          const dinoThemeState = CharacterThemeState(theme.DinoTheme());
-          behavior.onNewState(dinoThemeState);
+          const degenThemeState = CharacterThemeState(theme.DegenTheme());
+          behavior.onNewState(degenThemeState);
           await game.ready();
           game.update(0);
           verifyNever(
             () => arcadeBackgroundBloc
-                .onCharacterSelected(dinoThemeState.characterTheme),
+                .onCharacterSelected(degenThemeState.characterTheme),
           );
         },
       );
@@ -142,12 +142,12 @@ void main() {
             platformHelper: platformHelper,
           );
 
-          const dinoThemeState = CharacterThemeState(theme.DinoTheme());
-          behavior.onNewState(dinoThemeState);
+          const degenThemeState = CharacterThemeState(theme.DegenTheme());
+          behavior.onNewState(degenThemeState);
           await game.ready();
           verify(
             () => arcadeBackgroundBloc
-                .onCharacterSelected(dinoThemeState.characterTheme),
+                .onCharacterSelected(degenThemeState.characterTheme),
           ).called(1);
         },
       );
@@ -176,11 +176,11 @@ void main() {
             platformHelper: platformHelper,
           );
 
-          const dinoThemeState = CharacterThemeState(theme.DinoTheme());
-          behavior.onNewState(dinoThemeState);
+          const degenThemeState = CharacterThemeState(theme.DegenTheme());
+          behavior.onNewState(degenThemeState);
           await game.ready();
           verify(
-            () => ballBloc.onCharacterSelected(dinoThemeState.characterTheme),
+            () => ballBloc.onCharacterSelected(degenThemeState.characterTheme),
           ).called(1);
         },
       );

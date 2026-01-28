@@ -15,7 +15,7 @@ void main() {
             rank: '1',
             playerInitials: '',
             score: 0,
-            character: CharacterType.dash.toTheme.leaderboardIcon,
+            character: CharacterType.dev.toTheme.leaderboardIcon,
           ),
         );
       });
@@ -23,19 +23,19 @@ void main() {
 
     group('CharacterType', () {
       test('toTheme returns the correct theme', () {
-        expect(CharacterType.dash.toTheme, equals(DashTheme()));
-        expect(CharacterType.sparky.toTheme, equals(SparkyTheme()));
-        expect(CharacterType.android.toTheme, equals(AndroidTheme()));
-        expect(CharacterType.dino.toTheme, equals(DinoTheme()));
+        expect(CharacterType.dev.toTheme, equals(DevTheme()));
+        expect(CharacterType.shiba.toTheme, equals(ShibaTheme()));
+        expect(CharacterType.miner.toTheme, equals(MinerTheme()));
+        expect(CharacterType.degen.toTheme, equals(DegenTheme()));
       });
     });
 
     group('CharacterTheme', () {
       test('toType returns the correct type', () {
-        expect(DashTheme().toType, equals(CharacterType.dash));
-        expect(SparkyTheme().toType, equals(CharacterType.sparky));
-        expect(AndroidTheme().toType, equals(CharacterType.android));
-        expect(DinoTheme().toType, equals(CharacterType.dino));
+        expect(DevTheme().toType, equals(CharacterType.dev));
+        expect(ShibaTheme().toType, equals(CharacterType.shiba));
+        expect(MinerTheme().toType, equals(CharacterType.miner));
+        expect(DegenTheme().toType, equals(CharacterType.degen));
       });
     });
   });

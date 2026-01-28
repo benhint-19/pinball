@@ -22,10 +22,10 @@ flutter:
   generate: true
   assets:
     - assets/images/
-    - assets/images/android/
-    - assets/images/dash/
-    - assets/images/dino/
-    - assets/images/sparky/
+    - assets/images/miner/
+    - assets/images/dev/
+    - assets/images/degen/
+    - assets/images/shiba/
 
 flutter_gen:
   assets:

@@ -7,10 +7,10 @@ import 'package:pinball_theme/pinball_theme.dart' hide Assets;
 extension PinballGameAssetsX on PinballGame {
   /// Returns a list of assets to be loaded
   List<Future<Image> Function()> preLoadAssets() {
-    const dashTheme = DashTheme();
-    const sparkyTheme = SparkyTheme();
-    const androidTheme = AndroidTheme();
-    const dinoTheme = DinoTheme();
+    const devTheme = DevTheme();
+    const shibaTheme = ShibaTheme();
+    const minerTheme = MinerTheme();
+    const degenTheme = DegenTheme();
     return [
       () => images.load(components.Assets.images.boardBackground.keyName),
       () => images.load(components.Assets.images.ball.flameEffect.keyName),
@@ -184,18 +184,18 @@ extension PinballGameAssetsX on PinballGame {
           images.load(components.Assets.images.displayArrows.arrowLeft.keyName),
       () => images
           .load(components.Assets.images.displayArrows.arrowRight.keyName),
-      () => images.load(androidTheme.leaderboardIcon.keyName),
-      () => images.load(androidTheme.ball.keyName),
-      () => images.load(dashTheme.leaderboardIcon.keyName),
-      () => images.load(dashTheme.ball.keyName),
-      () => images.load(dinoTheme.leaderboardIcon.keyName),
-      () => images.load(dinoTheme.ball.keyName),
-      () => images.load(sparkyTheme.leaderboardIcon.keyName),
-      () => images.load(sparkyTheme.ball.keyName),
-      () => images.load(androidTheme.background.keyName),
-      () => images.load(dashTheme.background.keyName),
-      () => images.load(dinoTheme.background.keyName),
-      () => images.load(sparkyTheme.background.keyName),
+      () => images.load(minerTheme.leaderboardIcon.keyName),
+      () => images.load(minerTheme.ball.keyName),
+      () => images.load(devTheme.leaderboardIcon.keyName),
+      () => images.load(devTheme.ball.keyName),
+      () => images.load(degenTheme.leaderboardIcon.keyName),
+      () => images.load(degenTheme.ball.keyName),
+      () => images.load(shibaTheme.leaderboardIcon.keyName),
+      () => images.load(shibaTheme.ball.keyName),
+      () => images.load(minerTheme.background.keyName),
+      () => images.load(devTheme.background.keyName),
+      () => images.load(degenTheme.background.keyName),
+      () => images.load(shibaTheme.background.keyName),
     ];
   }
 }

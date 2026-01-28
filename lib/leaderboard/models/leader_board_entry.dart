@@ -51,14 +51,14 @@ extension CharacterTypeX on CharacterType {
   /// Conversion method to [CharacterTheme]
   CharacterTheme get toTheme {
     switch (this) {
-      case CharacterType.dash:
-        return const DashTheme();
-      case CharacterType.sparky:
-        return const SparkyTheme();
-      case CharacterType.android:
-        return const AndroidTheme();
-      case CharacterType.dino:
-        return const DinoTheme();
+      case CharacterType.dev:
+        return const DevTheme();
+      case CharacterType.shiba:
+        return const ShibaTheme();
+      case CharacterType.miner:
+        return const MinerTheme();
+      case CharacterType.degen:
+        return const DegenTheme();
     }
   }
 }
@@ -69,16 +69,16 @@ extension CharacterThemeX on CharacterTheme {
   /// Conversion method to [CharacterType]
   CharacterType get toType {
     switch (runtimeType) {
-      case DashTheme:
-        return CharacterType.dash;
-      case SparkyTheme:
-        return CharacterType.sparky;
-      case AndroidTheme:
-        return CharacterType.android;
-      case DinoTheme:
-        return CharacterType.dino;
+      case DevTheme:
+        return CharacterType.dev;
+      case ShibaTheme:
+        return CharacterType.shiba;
+      case MinerTheme:
+        return CharacterType.miner;
+      case DegenTheme:
+        return CharacterType.degen;
       default:
-        return CharacterType.dash;
+        return CharacterType.dev;
     }
   }
 }

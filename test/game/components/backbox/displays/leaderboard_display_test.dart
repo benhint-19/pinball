@@ -30,7 +30,7 @@ class _TestGame extends Forge2DGame with TapCallbacks {
     await super.onLoad();
     images.prefix = '';
     await images.loadAll([
-      const AndroidTheme().leaderboardIcon.keyName,
+      const MinerTheme().leaderboardIcon.keyName,
       Assets.images.displayArrows.arrowLeft.keyName,
       Assets.images.displayArrows.arrowRight.keyName,
     ]);
@@ -50,52 +50,52 @@ const leaderboard = [
   LeaderboardEntryData(
     playerInitials: 'AAA',
     score: 123,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'BBB',
     score: 1234,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'CCC',
     score: 12345,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'DDD',
     score: 12346,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'EEE',
     score: 123467,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'FFF',
     score: 123468,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'GGG',
     score: 1234689,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'HHH',
     score: 12346891,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'III',
     score: 123468912,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
   LeaderboardEntryData(
     playerInitials: 'JJJ',
     score: 1234689121,
-    character: CharacterType.android,
+    character: CharacterType.miner,
   ),
 ];
 

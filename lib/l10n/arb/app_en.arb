@@ -40,6 +40,10 @@
   "@flip": {
     "description": "Text displayed for the word FLIP"
   },
+  "shareText": "I set a high score on Seeker Pinball! Play now! #SeekerPinball",
+  "@shareText": {
+    "description": "Text that will be shared when the user clicks on the share button"
+  },
   "start": "Start",
   "@start": {
     "description": "Text displayed on the character selection page start button"
@@ -144,17 +148,17 @@
   "@linkBoxPrivacyPolicy": {
     "description": "Text shown on the link box which redirect to privacy policy"
   },
-  "loading": "Loading",
-  "@loading": {
-    "description": "Text shown to indicate loading times"
+  "loadingApp": "Loading Seeker Pinball...",
+  "@loadingApp": {
+    "description": "Loading message shown when the app is downloading assets"
   },
   "replay": "Replay",
   "@replay": {
     "description": "Text displayed on the share page for replay button"
   },
-  "ioPinball": "I/O Pinball",
-  "@ioPinball": {
-    "description": "I/O Pinball - Name of the game"
+  "seekerPinball": "Seeker Pinball",
+  "@seekerPinball": {
+    "description": "The title of the Seeker Pinball game"
   },
   "shareYourScore": "Share your score",
   "@shareYourScore": {
@@ -168,9 +172,9 @@
   "@share": {
     "description": "Text for share link on info screen."
   },
-  "gotoIO": "GO TO I/O",
+  "gotoIO": "GO TO SEEKER",
   "@gotoIO": {
-    "description": "Text for going to I/O site link on info screen."
+    "description": "Text for going to Seeker site link on info screen."
   },
   "learnMore": "Learn more about building games in Flutter with",
   "@learnMore": {
@@ -201,7 +205,7 @@
     "description": "Text shown when the leaderboard had an error while loading"
   }
   ,
-  "letEveryone": "Let everyone know about I/O Pinball",
+  "letEveryone": "Let everyone know about Seeker Pinball",
   "@letEveryone": {
     "description": "Text displayed on share screen for description"
   },
@@ -213,7 +217,7 @@
   "@socialMediaAccount": {
     "description": "Text displayed on share screen for description"
   },
-  "iGotScoreAtPinball": "I got {score} points in #IOPinball, can you beat my score? \nSee you at #GoogleIO!",
+  "iGotScoreAtPinball": "I got {score} points in #SeekerPinball, can you beat my score?",
   "@iGotScoreAtPinball": {
     "description": "Text to share score on Social Network",
     "placeholders": {

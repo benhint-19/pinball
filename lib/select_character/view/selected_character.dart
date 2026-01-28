@@ -24,10 +24,10 @@ class SelectedCharacter extends StatefulWidget {
   /// Returns a list of assets to be loaded.
   static List<Future Function()> loadAssets() {
     return [
-      () => Flame.images.load(const DashTheme().animation.keyName),
-      () => Flame.images.load(const AndroidTheme().animation.keyName),
-      () => Flame.images.load(const DinoTheme().animation.keyName),
-      () => Flame.images.load(const SparkyTheme().animation.keyName),
+      () => Flame.images.load(const DevTheme().animation.keyName),
+      () => Flame.images.load(const MinerTheme().animation.keyName),
+      () => Flame.images.load(const DegenTheme().animation.keyName),
+      () => Flame.images.load(const ShibaTheme().animation.keyName),
     ];
   }
 }
@@ -86,8 +86,8 @@ class _SelectedCharacterState extends State<SelectedCharacter>
   void _setupCharacterAnimation() {
     final spriteSheet = SpriteSheet.fromColumnsAndRows(
       image: Flame.images.fromCache(widget.currentCharacter.animation.keyName),
-      columns: 12,
-      rows: 6,
+      columns: 8,
+      rows: 1,
     );
     final animation = spriteSheet.createAnimation(
       row: 0,

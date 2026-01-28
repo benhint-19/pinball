@@ -1,11 +1,11 @@
 {
-    "name": "Pinball",
-    "short_name": "Pinball",
+    "name": "Seeker Pinball",
+    "short_name": "Seeker Pinball",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Google I/O 2022 Pinball game built with Flutter and Firebase",
+    "description": "Seeker Pinball game built with Flutter and Firebase",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

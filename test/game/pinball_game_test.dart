@@ -266,7 +266,7 @@ void main() {
                 (score) => LeaderboardEntryData(
                   playerInitials: 'user$score',
                   score: score,
-                  character: CharacterType.dash,
+                  character: CharacterType.dev,
                 ),
               )
               .toList();
