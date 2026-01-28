@@ -16,7 +16,7 @@ typedef OnShareTap = void Function();
 
 final _titleTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 1.6,
+    fontSize: 3.2,
     color: PinballColors.white,
     fontFamily: PinballFonts.pixeloidSans,
   ),
@@ -24,7 +24,7 @@ final _titleTextPaint = TextPaint(
 
 final _titleBoldTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 1.4,
+    fontSize: 2.8,
     color: PinballColors.white,
     fontFamily: PinballFonts.pixeloidSans,
     fontWeight: FontWeight.bold,
@@ -33,7 +33,7 @@ final _titleBoldTextPaint = TextPaint(
 
 final _linkTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 1.7,
+    fontSize: 3.4,
     color: PinballColors.orange,
     fontFamily: PinballFonts.pixeloidSans,
     fontWeight: FontWeight.bold,
@@ -42,7 +42,7 @@ final _linkTextPaint = TextPaint(
 
 final _descriptionTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 1.6,
+    fontSize: 3.2,
     color: PinballColors.white,
     fontFamily: PinballFonts.pixeloidSans,
   ),
@@ -75,7 +75,7 @@ class _InstructionsComponent extends PositionComponent with HasGameRef {
     OnShareTap? onShare,
   }) : super(
           anchor: Anchor.center,
-          position: Vector2(0, -25),
+          position: Vector2(0, -50),
           children: [
             _TitleComponent(),
             _LinksComponent(
@@ -90,7 +90,7 @@ class _TitleComponent extends PositionComponent with HasGameRef {
   _TitleComponent()
       : super(
           anchor: Anchor.center,
-          position: Vector2(0, 3),
+          position: Vector2(0, 6),
           children: [
             _TitleBackgroundSpriteComponent(),
             _ShareScoreTextComponent(),
@@ -103,7 +103,7 @@ class _ShareScoreTextComponent extends TextComponent with HasGameRef {
   _ShareScoreTextComponent()
       : super(
           anchor: Anchor.center,
-          position: Vector2(0, -1.5),
+          position: Vector2(0, -3),
           textRenderer: _titleTextPaint,
         );
 
@@ -118,7 +118,7 @@ class _ChallengeFriendsTextComponent extends TextComponent with HasGameRef {
   _ChallengeFriendsTextComponent()
       : super(
           anchor: Anchor.center,
-          position: Vector2(0, 1.5),
+          position: Vector2(0, 3),
           textRenderer: _titleBoldTextPaint,
         );
 
@@ -144,7 +144,7 @@ class _TitleBackgroundSpriteComponent extends SpriteComponent with HasGameRef {
           .fromCache(Assets.images.backbox.displayTitleDecoration.keyName),
     );
     this.sprite = sprite;
-    size = sprite.originalSize / 22;
+    size = sprite.originalSize / 11;
   }
 }
 
@@ -153,7 +153,7 @@ class _LinksComponent extends PositionComponent with HasGameRef {
     OnShareTap? onShare,
   }) : super(
           anchor: Anchor.center,
-          position: Vector2(0, 9.2),
+          position: Vector2(0, 18.4),
           children: [
             ShareLinkComponent(onTap: onShare),
             GoogleIOLinkComponent(),
@@ -171,7 +171,7 @@ class ShareLinkComponent extends TextComponent with HasGameRef, TapCallbacks {
   })  : _onTap = onTap,
         super(
           anchor: Anchor.center,
-          position: Vector2(-7, 0),
+          position: Vector2(-14, 0),
           textRenderer: _linkTextPaint,
         );
 
@@ -208,7 +208,7 @@ class GoogleIOLinkComponent extends TextComponent
   GoogleIOLinkComponent()
       : super(
           anchor: Anchor.center,
-          position: Vector2(6, 0),
+          position: Vector2(12, 0),
           textRenderer: _linkTextPaint,
         );
 
@@ -238,7 +238,7 @@ class _DescriptionComponent extends PositionComponent with HasGameRef {
   _DescriptionComponent()
       : super(
           anchor: Anchor.center,
-          position: Vector2(0, 13),
+          position: Vector2(0, 26),
           children: [
             _LearnMoreTextComponent(),
             _FirebaseTextComponent(),

@@ -11,7 +11,7 @@ import 'package:pinball_ui/pinball_ui.dart';
 
 final _titleTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 2,
+    fontSize: 4,
     color: PinballColors.red,
     fontFamily: PinballFonts.pixeloidSans,
   ),
@@ -19,15 +19,15 @@ final _titleTextPaint = TextPaint(
 
 final _bodyTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 1.8,
+    fontSize: 3.5,
     color: PinballColors.white,
     fontFamily: PinballFonts.pixeloidSans,
   ),
 );
 
-double _calcY(int i) => (i * 3.2) + 3.2;
+double _calcY(int i) => (i * 6.5) + 6.5;
 
-const _columns = [-14.0, 0.0, 14.0];
+const _columns = [-30.0, 0.0, 30.0];
 
 String _rank(int number) {
   switch (number) {
@@ -97,7 +97,7 @@ class LeaderboardDisplay extends PositionComponent with HasGameRef {
 
   @override
   Future<void> onLoad() async {
-    position = Vector2(0, -30);
+    position = Vector2(0, -50);
 
     final l10n = readProvider<AppLocalizations>();
     final ranking = _entries.take(5).toList();
@@ -183,7 +183,7 @@ class _RankingPage extends PositionComponent with HasGameRef {
                 ranking[i].character.toTheme.leaderboardIcon.keyName,
               ),
               anchor: Anchor.center,
-              size: Vector2(1.8, 1.8),
+              size: Vector2(3.5, 3.5),
               position: Vector2(_columns[2] - 3, _calcY(i) + .25),
             ),
             TextComponent(

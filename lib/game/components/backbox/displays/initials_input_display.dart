@@ -15,7 +15,7 @@ typedef InitialsOnSubmit = void Function(String);
 
 final _bodyTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 3,
+    fontSize: 6,
     color: PinballColors.white,
     fontFamily: PinballFonts.pixeloidSans,
   ),
@@ -23,7 +23,7 @@ final _bodyTextPaint = TextPaint(
 
 final _subtitleTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 1.8,
+    fontSize: 3.6,
     color: PinballColors.white,
     fontFamily: PinballFonts.pixeloidSans,
   ),
@@ -58,8 +58,8 @@ class InitialsInputDisplay extends Component with HasGameRef {
       await add(
         InitialsLetterPrompt(
           position: Vector2(
-            10.8 + (2.5 * i),
-            -20,
+            20.0 + (5.0 * i),
+            -40,
           ),
           hasFocus: i == 0,
         ),
@@ -106,7 +106,7 @@ class _ScoreLabelTextComponent extends TextComponent {
   _ScoreLabelTextComponent()
       : super(
           anchor: Anchor.centerLeft,
-          position: Vector2(-16.9, -24),
+          position: Vector2(-33.8, -48),
           textRenderer: _bodyTextPaint.copyWith(
             (style) => style.copyWith(
               color: PinballColors.red,
@@ -126,7 +126,7 @@ class _ScoreTextComponent extends TextComponent {
       : super(
           text: score,
           anchor: Anchor.centerLeft,
-          position: Vector2(-16.9, -20),
+          position: Vector2(-33.8, -40),
           textRenderer: _bodyTextPaint,
         );
 }
@@ -135,7 +135,7 @@ class _NameLabelTextComponent extends TextComponent {
   _NameLabelTextComponent()
       : super(
           anchor: Anchor.center,
-          position: Vector2(10.8, -24),
+          position: Vector2(21.6, -48),
           textRenderer: _bodyTextPaint.copyWith(
             (style) => style.copyWith(
               color: PinballColors.red,
@@ -155,7 +155,7 @@ class _CharacterIconSpriteComponent extends SpriteComponent with HasGameRef {
       : _characterIconPath = characterIconPath,
         super(
           anchor: Anchor.center,
-          position: Vector2(7.6, -20),
+          position: Vector2(15.2, -40),
         );
 
   final String _characterIconPath;
@@ -165,7 +165,7 @@ class _CharacterIconSpriteComponent extends SpriteComponent with HasGameRef {
     await super.onLoad();
     final sprite = Sprite(gameRef.images.fromCache(_characterIconPath));
     this.sprite = sprite;
-    size = sprite.originalSize / 20;
+    size = sprite.originalSize / 10;
   }
 }
 
@@ -278,7 +278,7 @@ class _DividerSpriteComponent extends SpriteComponent with HasGameRef {
       gameRef.images.fromCache(Assets.images.backbox.displayDivider.keyName),
     );
     this.sprite = sprite;
-    size = sprite.originalSize / 20;
+    size = sprite.originalSize / 10;
   }
 }
 
@@ -286,7 +286,7 @@ class _InstructionsComponent extends PositionComponent with HasGameRef {
   _InstructionsComponent()
       : super(
           anchor: Anchor.center,
-          position: Vector2(0, -12.3),
+          position: Vector2(0, -24.6),
           children: [
             _EnterInitialsTextComponent(),
             _ArrowsTextComponent(),

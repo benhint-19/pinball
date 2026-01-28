@@ -7,7 +7,7 @@ import 'package:pinball_ui/pinball_ui.dart';
 
 final _bodyTextPaint = TextPaint(
   style: const TextStyle(
-    fontSize: 3,
+    fontSize: 6,
     color: PinballColors.white,
     fontFamily: PinballFonts.pixeloidSans,
   ),
