@@ -25,7 +25,16 @@ Future<App> bootstrap() async {
       AuthenticationRepository(FirebaseAuth.instance);
   final pinballAudioPlayer = PinballAudioPlayer();
   final platformHelper = PlatformHelper();
-  await authenticationRepository.authenticateAnonymously();
+
+  // Try to authenticate anonymously, but don't crash if it fails
+  try {
+    await authenticationRepository.authenticateAnonymously();
+  } catch (e) {
+    // ignore: avoid_print
+    print('Anonymous authentication failed: $e');
+    // App can still run without authentication for basic gameplay
+  }
+
   return App(
     authenticationRepository: authenticationRepository,
     leaderboardRepository: leaderboardRepository,
