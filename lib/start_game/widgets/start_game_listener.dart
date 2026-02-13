@@ -30,13 +30,11 @@ class StartGameListener extends StatelessWidget {
           case StartGameStatus.initial:
             break;
           case StartGameStatus.selectCharacter:
-            _onSelectCharacter(context);
-            context.read<GameBloc>().add(const GameStarted());
             break;
           case StartGameStatus.howToPlay:
-            _onHowToPlay(context);
             break;
           case StartGameStatus.play:
+            context.read<GameBloc>().add(const GameStarted());
             break;
         }
       },
