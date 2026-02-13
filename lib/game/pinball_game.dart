@@ -35,6 +35,30 @@ class PinballGame extends Forge2DGame
         _l10n = l10n,
         super(gravity: Vector2(0, 30)) {
     images.prefix = '';
+    pauseWhenBackgrounded = false;
+  }
+
+  @override
+  void update(double dt) {
+    try {
+      super.update(dt);
+    } catch (e) {
+      // Prevent contact callback exceptions from killing the physics sim
+    }
+  }
+
+  @override
+  void lifecycleStateChange(AppLifecycleState state) {
+    super.lifecycleStateChange(state);
+    if (state == AppLifecycleState.resumed) {
+      // Nudge any stuck balls when returning focus
+      for (final ball in descendants().whereType<Ball>()) {
+        final body = ball.body;
+        if (body.linearVelocity.length < 0.1) {
+          body.linearVelocity = Vector2(0, 1);
+        }
+      }
+    }
   }
 
   /// Identifier of the play button overlay.
