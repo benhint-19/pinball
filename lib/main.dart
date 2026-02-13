@@ -16,7 +16,16 @@ import 'package:share_repository/share_repository.dart';
 
 Future<App> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).timeout(const Duration(seconds: 5));
+  } catch (e) {
+    // ignore: avoid_print
+    print('Firebase initialization failed: $e');
+  }
+
   final leaderboardRepository =
       LeaderboardRepository(FirebaseFirestore.instance);
   const shareRepository =
@@ -28,11 +37,12 @@ Future<App> bootstrap() async {
 
   // Try to authenticate anonymously, but don't crash if it fails
   try {
-    await authenticationRepository.authenticateAnonymously();
+    await authenticationRepository
+        .authenticateAnonymously()
+        .timeout(const Duration(seconds: 5));
   } catch (e) {
     // ignore: avoid_print
     print('Anonymous authentication failed: $e');
-    // App can still run without authentication for basic gameplay
   }
 
   return App(

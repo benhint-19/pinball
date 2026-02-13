@@ -69,7 +69,9 @@ class PinballGame extends Forge2DGame
 
   Future<void> preFetchLeaderboard() async {
     try {
-      _entries = await leaderboardRepository.fetchTop10Leaderboard();
+      _entries = await leaderboardRepository
+          .fetchTop10Leaderboard()
+          .timeout(const Duration(seconds: 5));
     } catch (_) {
       // An initial null leaderboard means that we couldn't fetch
       // the entries for the [Backbox] and it will show the relevant display.
