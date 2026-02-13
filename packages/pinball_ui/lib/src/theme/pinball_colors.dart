@@ -26,17 +26,17 @@ abstract class PinballColors {
   /// Color: 0x00000000
   static const Color transparent = Color(0x00000000);
 
-  /// Color: 0xFFE33B2D
-  static const Color loadingDarkRed = Color(0xFFE33B2D);
+  /// Color: 0xFF9945FF - Solana purple (loading bar fill dark)
+  static const Color loadingDarkRed = Color(0xFF9945FF);
 
-  /// Color: 0xFFEC5E2B
-  static const Color loadingLightRed = Color(0xFFEC5E2B);
+  /// Color: 0xFF14F195 - Solana green (loading bar fill light)
+  static const Color loadingLightRed = Color(0xFF14F195);
 
-  /// Color: 0xFF4087F8
-  static const Color loadingDarkBlue = Color(0xFF4087F8);
+  /// Color: 0xFF1A0F2E - Dark purple (loading bar background dark)
+  static const Color loadingDarkBlue = Color(0xFF1A0F2E);
 
-  /// Color: 0xFF6CCAE4
-  static const Color loadingLightBlue = Color(0xFF6CCAE4);
+  /// Color: 0xFF2D1B4E - Dark purple (loading bar background light)
+  static const Color loadingLightBlue = Color(0xFF2D1B4E);
 
   /// Color: 0xFF274E54
   static const Color crtBackground = Color(0xFF274E54);

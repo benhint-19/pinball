@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pinball/assets_manager/assets_manager.dart';
-import 'package:pinball/gen/gen.dart';
+import 'package:pinball/assets_manager/widgets/solana_pixel_logo.dart';
 import 'package:pinball/l10n/l10n.dart';
 import 'package:pinball_ui/pinball_ui.dart';
 
@@ -23,9 +23,19 @@ class AssetsLoadingPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Assets.images.loadingGame.ioPinball.image(),
+            const SolanaPixelLogo(width: 180),
+            const SizedBox(height: 24),
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [Color(0xFF9945FF), Color(0xFF14F195)],
+              ).createShader(bounds),
+              child: Text(
+                'SOLANA SEEKER',
+                style: displayLarge?.copyWith(
+                  fontSize: 32,
+                  color: PinballColors.white,
+                ),
+              ),
             ),
             const SizedBox(height: 40),
             AnimatedEllipsisText(
