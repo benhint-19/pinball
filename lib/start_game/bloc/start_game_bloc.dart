@@ -22,7 +22,7 @@ class StartGameBloc extends Bloc<StartGameEvent, StartGameState> {
   ) {
     emit(
       state.copyWith(
-        status: StartGameStatus.howToPlay,
+        status: StartGameStatus.selectCharacter,
       ),
     );
   }
@@ -33,7 +33,7 @@ class StartGameBloc extends Bloc<StartGameEvent, StartGameState> {
   ) {
     emit(
       state.copyWith(
-        status: StartGameStatus.howToPlay,
+        status: StartGameStatus.selectCharacter,
       ),
     );
   }
