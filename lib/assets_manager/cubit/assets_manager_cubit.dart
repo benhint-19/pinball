@@ -37,9 +37,15 @@ class AssetsManagerCubit extends Cubit<AssetsManagerState> {
     _triggerLoad = () async {
       if (loadables.isEmpty) return;
       final loadable = loadables.removeAt(0);
-      await loadable();
-      _triggerLoad();
-      emit(state.copyWith(loaded: state.loaded + 1));
+      try {
+        await loadable();
+      } catch (_) {
+        // Skip failing assets so the loading lane keeps going.
+      }
+      if (!isClosed) {
+        emit(state.copyWith(loaded: state.loaded + 1));
+        _triggerLoad();
+      }
     };
 
     const _throttleSize = 3;
