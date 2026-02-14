@@ -30,7 +30,7 @@ class AssetsLoadingPage extends StatelessWidget {
                 colors: [Color(0xFF9945FF), Color(0xFF14F195)],
               ).createShader(bounds),
               child: Text(
-                'SOLANA SEEKER',
+                'SEEKER PINBALL',
                 style: displayLarge?.copyWith(
                   fontSize: 32,
                   color: PinballColors.white,

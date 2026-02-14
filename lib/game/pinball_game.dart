@@ -35,6 +35,11 @@ class PinballGame extends Forge2DGame
         _l10n = l10n,
         super(gravity: Vector2(0, 30)) {
     images.prefix = '';
+    // Disable Flame 1.18's default pause-on-background behavior.
+    // On web, focus shifts easily (BLoC state changes rebuild HUD widgets,
+    // clicking overlays, etc.) which pauses the physics engine mid-collision,
+    // causing the ball to appear stuck until focus returns.
+    pauseWhenBackgrounded = false;
   }
 
   /// Identifier of the play button overlay.
