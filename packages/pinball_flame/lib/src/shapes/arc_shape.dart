@@ -20,7 +20,6 @@ class ArcShape extends ChainShape {
         offsetAngle: rotation,
       ),
     );
-    _setGhostVertices();
   }
 
   /// The center of the arc.
@@ -36,14 +35,4 @@ class ArcShape extends ChainShape {
 
   /// Angle in radians to rotate the arc around its [center].
   final double rotation;
-
-  /// Extrapolate ghost vertices from the chain endpoints so the contact
-  /// solver can filter out internal-edge ghost collisions at junctions
-  /// with adjacent fixtures.
-  void _setGhostVertices() {
-    if (vertices.length >= 2) {
-      prevVertex = vertices[0] * 2 - vertices[1];
-      nextVertex = vertices.last * 2 - vertices[vertices.length - 2];
-    }
-  }
 }
