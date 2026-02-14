@@ -13,22 +13,25 @@ class BumpingBehavior extends ContactBehavior {
   /// Determines how strong the bump is.
   final double _strength;
 
+  final WorldManifold _worldManifold = WorldManifold();
+
   @override
   void postSolve(Object other, Contact contact, ContactImpulse impulse) {
     super.postSolve(other, contact, impulse);
     if (other is! BodyComponent) return;
 
-    // Push the ball directly away from the parent body center.
-    // Using position delta instead of contact normal avoids trapping
-    // at multi-fixture junctions (e.g. slingshot circle/edge seams)
-    // where opposing normals cancel each other out.
-    final direction = other.body.position - parent.body.position;
-    final length = direction.length;
-    if (length == 0) return;
-    direction.scale(1 / length); // normalize
+    contact.getWorldManifold(_worldManifold);
+    final normal = _worldManifold.normal;
+
+    // WorldManifold.normal points from bodyA → bodyB.
+    // We want it pointing from parent → other (pushing other away).
+    // If parent is bodyB, the normal points the wrong way — negate it.
+    if (contact.bodyB == parent.body) {
+      normal.negate();
+    }
 
     other.body.applyLinearImpulse(
-      direction..scale(other.body.mass * _strength),
+      normal..scale(other.body.mass * _strength),
     );
   }
 }
