@@ -5,25 +5,37 @@ import 'package:pinball_components/pinball_components.dart';
 
 /// Detects when the [Ball] is stuck and nudges it free.
 ///
-/// Checks ball displacement over a short window. If the ball hasn't moved
-/// far enough, it gets a kick. Skips checks while the ball is intentionally
-/// stopped (gravityScale zero, e.g. during SparkyComputer turbo charge).
+/// Uses two-tier detection:
+/// - **Fast** (0.3 s, 0.5 unit threshold): catches truly stationary balls and
+///   kicks them. After 3 consecutive kicks, teleports.
+/// - **Slow** (1.5 s, 3.0 unit threshold): catches balls that are vibrating /
+///   oscillating between surfaces but not making real progress. Teleports
+///   immediately.
 ///
-/// Escalation: kick → stronger kick → teleport above flippers.
+/// Skips checks while the ball is intentionally stopped (gravityScale zero).
 class BallStuckBehavior extends Component with ParentIsA<Ball> {
-  static const _checkInterval = 0.35;
-  static const _minDisplacement = 1.0;
+  // ── Fast tier ──
+  static const _fastInterval = 0.3;
+  static const _fastThreshold = 0.5;
+  static const _fastTeleportAfter = 3; // kicks before teleport
 
-  /// After this many consecutive stuck detections, teleport the ball to
-  /// a safe position above the flippers instead of just kicking.
-  static const _teleportThreshold = 4;
+  // ── Slow tier ──
+  static const _slowInterval = 1.5;
+  static const _slowThreshold = 3.0;
+
+  // ── Teleport target: above the flippers ──
+  static final _safePosition = Vector2(0, 55);
 
   final _random = math.Random();
-  double _timer = 0;
-  double _lastX = 0;
-  double _lastY = 0;
+
+  double _fastTimer = 0;
+  double _slowTimer = 0;
+  double _fastX = 0;
+  double _fastY = 0;
+  double _slowX = 0;
+  double _slowY = 0;
   bool _initialized = false;
-  int _consecutiveStucks = 0;
+  int _kickCount = 0;
 
   @override
   void update(double dt) {
@@ -32,50 +44,77 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
     // Skip while ball is intentionally stopped (stop() zeroes gravityScale).
     final gs = parent.body.gravityScale;
     if (gs != null && gs.x == 0 && gs.y == 0) {
-      _timer = 0;
+      _fastTimer = 0;
+      _slowTimer = 0;
       return;
     }
 
     final pos = parent.body.position;
 
     if (!_initialized) {
-      _lastX = pos.x;
-      _lastY = pos.y;
+      _fastX = pos.x;
+      _fastY = pos.y;
+      _slowX = pos.x;
+      _slowY = pos.y;
       _initialized = true;
       return;
     }
 
-    _timer += dt;
-    if (_timer >= _checkInterval) {
-      final dx = pos.x - _lastX;
-      final dy = pos.y - _lastY;
-      final distSq = dx * dx + dy * dy;
+    _fastTimer += dt;
+    _slowTimer += dt;
 
-      if (distSq < _minDisplacement * _minDisplacement) {
-        _consecutiveStucks++;
+    // ── Slow tier: catches oscillating/vibrating stuck balls ──
+    if (_slowTimer >= _slowInterval) {
+      final dx = pos.x - _slowX;
+      final dy = pos.y - _slowY;
+      if (dx * dx + dy * dy < _slowThreshold * _slowThreshold) {
+        _teleport();
+        return;
+      }
+      _slowX = pos.x;
+      _slowY = pos.y;
+      _slowTimer = 0;
+    }
+
+    // ── Fast tier: catches truly stationary balls ──
+    if (_fastTimer >= _fastInterval) {
+      final dx = pos.x - _fastX;
+      final dy = pos.y - _fastY;
+      if (dx * dx + dy * dy < _fastThreshold * _fastThreshold) {
+        _kickCount++;
         parent.resume();
-
-        if (_consecutiveStucks >= _teleportThreshold) {
-          // Kicks aren't working — teleport above the flippers and drop.
-          parent.body.setTransform(
-            Vector2(0, 55),
-            parent.body.angle,
-          );
-          parent.body.linearVelocity = Vector2(0, 15);
-          parent.body.angularVelocity = 0;
-          _consecutiveStucks = 0;
+        if (_kickCount >= _fastTeleportAfter) {
+          _teleport();
         } else {
-          final strength = 30.0 + (_consecutiveStucks * 15);
-          final xKick = (_random.nextDouble() - 0.5) * strength;
-          parent.body.linearVelocity = Vector2(xKick, strength);
+          _kick();
         }
       } else {
-        _consecutiveStucks = 0;
+        _kickCount = 0;
       }
-
-      _lastX = pos.x;
-      _lastY = pos.y;
-      _timer = 0;
+      _fastX = pos.x;
+      _fastY = pos.y;
+      _fastTimer = 0;
     }
+  }
+
+  void _kick() {
+    final strength = 30.0 + (_kickCount * 15);
+    final xKick = (_random.nextDouble() - 0.5) * strength;
+    parent.body.linearVelocity = Vector2(xKick, strength);
+  }
+
+  void _teleport() {
+    parent.resume();
+    parent.body.setTransform(_safePosition, parent.body.angle);
+    parent.body.linearVelocity = Vector2(0, 15);
+    parent.body.angularVelocity = 0;
+    _kickCount = 0;
+    // Reset both tiers so we don't immediately re-trigger.
+    _fastX = _safePosition.x;
+    _fastY = _safePosition.y;
+    _slowX = _safePosition.x;
+    _slowY = _safePosition.y;
+    _fastTimer = 0;
+    _slowTimer = 0;
   }
 }
