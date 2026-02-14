@@ -71,7 +71,7 @@ class Ball extends BodyComponent with Layered, InitialPosition, ZIndex {
     return world.createBody(bodyDef)
       ..createFixtureFromShape(
         shape,
-        restitution: 0.4,
+        restitution: 0.6,
       );
   }
 
