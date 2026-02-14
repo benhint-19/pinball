@@ -25,11 +25,18 @@ class BumpingBehavior extends ContactBehavior {
     if (other is! BodyComponent) return;
 
     contact.getWorldManifold(worldManifold);
+    final normal = worldManifold.normal;
+
+    // forge2d 0.13.0: WorldManifold.normal points from bodyA→bodyB, but
+    // body ordering is non-deterministic.  Ensure the impulse always pushes
+    // the other body *away* from the parent (bumper/kicker).
+    final toOther = other.body.position - parent.body.position;
+    if (normal.dot(toOther) < 0) {
+      normal.negate();
+    }
+
     other.body.applyLinearImpulse(
-      worldManifold.normal
-        ..multiply(
-          Vector2.all(other.body.mass * _strength),
-        ),
+      normal..multiply(Vector2.all(other.body.mass * _strength)),
     );
   }
 }
