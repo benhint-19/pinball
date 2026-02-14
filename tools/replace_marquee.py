@@ -29,21 +29,19 @@ sat = brightness - np.min(orig_arr[:,:,:3], axis=2).astype(float)
 is_cloud = (brightness > 190) & (sat < 60)
 is_background = is_sky | is_cloud
 
-# ---- Define cover regions (generous bounding boxes) ----
-# Based on precise pixel analysis of character positions
+# ---- Define cover regions ----
+# Based on precise pixel analysis of character/text positions
 cover_regions = [
-    # "I/O" text top-left
-    (195, 125, 300, 170),
-    # "PINBALL" text top-right
-    (1625, 125, 1940, 170),
-    # Yellow flame / Sparky character (center-left) - expanded
+    # "I/O" text (center top) - white text
+    (960, 180, 1125, 270),
+    # "PINBALL" text (center, below I/O) - white text
+    (810, 295, 1245, 360),
+    # Yellow flame / Sparky character (center-left)
     (430, 390, 840, 825),
-    # Dino character (massive, right side) - expanded
+    # Dino character (massive, right side)
     (1230, 530, 1865, 1105),
-    # Android / ground elements (bottom-left) - expanded
+    # Android / ground elements (bottom-left)
     (215, 905, 645, 1105),
-    # Light rays / effects (bottom-center)
-    (880, 930, 1105, 1050),
     # Small floating elements near flame
     (710, 440, 775, 510),
     # Bird/Dash elements in center
@@ -52,19 +50,13 @@ cover_regions = [
 
 # ---- Build a mask of all pixels to cover ----
 cover_mask = np.zeros((H, W), dtype=bool)
-MARGIN = 8
 for x1, y1, x2, y2 in cover_regions:
-    y1c = max(0, y1 - MARGIN)
-    y2c = min(H, y2 + MARGIN)
-    x1c = max(0, x1 - MARGIN)
-    x2c = min(W, x2 + MARGIN)
-    cover_mask[y1c:y2c, x1c:x2c] = True
+    cover_mask[y1:y2, x1:x2] = True
 
 # Mark safe sky pixels (background pixels NOT in any cover region)
 safe_sky = is_background & ~cover_mask
 
-# ---- Step 1: Fill covered pixels with interpolated sky colors ----
-# For each row, use np.interp to interpolate sky colors across covered areas.
+# ---- Fill covered pixels with interpolated sky colors ----
 arr = orig_arr.copy()
 
 print("Filling covered areas with sampled sky...")
@@ -76,7 +68,6 @@ for y in range(H):
     safe_x = np.where(safe_sky[y, :])[0]
     ref_y = y
     if len(safe_x) < 2:
-        # Try nearby rows
         for dy in range(1, 40):
             for yy in [y - dy, y + dy]:
                 if 0 <= yy < H:
@@ -97,7 +88,6 @@ for y in range(H):
     if len(covered_x) == 0:
         continue
 
-    # np.interp for each color channel
     for c in range(3):
         arr[y, covered_x, c] = np.interp(
             covered_x.astype(float),
@@ -106,37 +96,11 @@ for y in range(H):
         ).astype(np.uint8)
     arr[y, covered_x, 3] = 255
 
-print("Covered areas filled")
-
-# ---- Step 2: Feather edges ----
-# Use Gaussian blur on just the boundary
-FEATHER = 10
-feather_mask = np.zeros((H, W), dtype=np.float32)
-for x1, y1, x2, y2 in cover_regions:
-    x1b = max(0, x1 - MARGIN)
-    y1b = max(0, y1 - MARGIN)
-    x2b = min(W, x2 + MARGIN)
-    y2b = min(H, y2 + MARGIN)
-    for y in range(max(0, y1b - FEATHER), min(H, y2b + FEATHER)):
-        for x in range(max(0, x1b - FEATHER), min(W, x2b + FEATHER)):
-            dx = max(0, x1b - x, x - x2b + 1)
-            dy = max(0, y1b - y, y - y2b + 1)
-            dist = (dx**2 + dy**2)**0.5
-            if dist == 0:
-                feather_mask[y, x] = 1.0
-            elif dist < FEATHER:
-                feather_mask[y, x] = max(feather_mask[y, x], 1.0 - dist / FEATHER)
-
-# Blend: filled * mask + original * (1-mask)
-for c in range(4):
-    arr[:, :, c] = (arr[:, :, c].astype(float) * feather_mask +
-                    orig_arr[:, :, c].astype(float) * (1 - feather_mask)).astype(np.uint8)
-
 img = Image.fromarray(arr, 'RGBA')
 draw = ImageDraw.Draw(img)
-print("Edges feathered")
+print("Covered areas filled")
 
-# ---- Step 3: Overlay Solana logo ----
+# ---- Overlay Solana logo ----
 overlay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
 od = ImageDraw.Draw(overlay)
 
@@ -201,7 +165,7 @@ img = Image.alpha_composite(img, overlay)
 draw = ImageDraw.Draw(img)
 print("Solana logo overlaid")
 
-# ---- Step 4: Text ----
+# ---- Text ----
 for fp in ['C:/Windows/Fonts/segoeuib.ttf', 'C:/Windows/Fonts/arialbd.ttf']:
     try:
         ft = ImageFont.truetype(fp, 90)
@@ -213,7 +177,7 @@ for fp in ['C:/Windows/Fonts/segoeuib.ttf', 'C:/Windows/Fonts/arialbd.ttf']:
 
 text_y = b3y + bar_h + 30
 
-# "SEEKER" - shadow then white, then gradient
+# "SEEKER" with shadow then gradient
 draw.text((center_x + 3, text_y + 3), 'SEEKER', font=ft,
           fill=(0, 0, 0, 80), anchor='mt')
 draw.text((center_x, text_y), 'SEEKER', font=ft,
