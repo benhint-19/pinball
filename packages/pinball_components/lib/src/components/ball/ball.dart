@@ -28,6 +28,7 @@ class Ball extends BodyComponent with Layered, InitialPosition, ZIndex {
             ),
             BallScalingBehavior(),
             BallGravitatingBehavior(),
+            BallStuckBehavior(),
           ],
         ) {
     layer = Layer.board;
