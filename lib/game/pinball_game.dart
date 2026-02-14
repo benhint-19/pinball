@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 import 'dart:math' as math;
 
 import 'package:flame/components.dart';
@@ -57,9 +58,33 @@ class PinballGame extends Forge2DGame
   // causes tunneling, stuck balls, and velocity explosions. Clamp to 1/30s.
   static const _maxDt = 1.0 / 30;
 
+  int _frameCount = 0;
+  final _stopwatch = Stopwatch();
+
   @override
   void update(double dt) {
-    super.update(math.min(dt, _maxDt));
+    _frameCount++;
+    _stopwatch.reset();
+    _stopwatch.start();
+
+    final clampedDt = math.min(dt, _maxDt);
+
+    if (_frameCount % 120 == 0) {
+      final balls = descendants().whereType<Ball>().length;
+      final status = _gameBloc.state.status;
+      dev.log(
+        'frame=$_frameCount dt=${dt.toStringAsFixed(4)} '
+        'balls=$balls status=$status paused=$paused',
+      );
+    }
+
+    super.update(clampedDt);
+
+    _stopwatch.stop();
+    final elapsed = _stopwatch.elapsedMilliseconds;
+    if (elapsed > 50) {
+      dev.log('SLOW FRAME #$_frameCount: ${elapsed}ms (dt=${dt.toStringAsFixed(4)})');
+    }
   }
 
   @override
