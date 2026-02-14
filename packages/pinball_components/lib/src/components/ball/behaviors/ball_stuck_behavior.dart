@@ -5,15 +5,13 @@ import 'package:pinball_components/pinball_components.dart';
 
 /// Detects when the [Ball] is stuck and nudges it free.
 ///
-/// Checks ball displacement over a time window. If the ball hasn't moved
-/// far enough, it is considered stuck and gets a strong kick.
-/// This mirrors real pinball machines' "ball search" mechanism.
+/// Checks ball displacement over a short window. If the ball hasn't moved
+/// far enough, it gets a kick. Skips checks while the ball is intentionally
+/// stopped (gravityScale zero, e.g. during SparkyComputer turbo charge).
 ///
-/// Each consecutive stuck detection escalates the kick strength to break
-/// free from deeper geometry traps.
+/// Each consecutive stuck detection escalates the kick strength.
 class BallStuckBehavior extends Component with ParentIsA<Ball> {
-  // Must exceed SparkyComputer's 1.5s hold time to avoid false triggers.
-  static const _checkInterval = 2.0;
+  static const _checkInterval = 0.5;
   static const _minDisplacement = 1.5;
 
   final _random = math.Random();
@@ -26,6 +24,14 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
   @override
   void update(double dt) {
     super.update(dt);
+
+    // Skip while ball is intentionally stopped (stop() zeroes gravityScale).
+    final gs = parent.body.gravityScale;
+    if (gs != null && gs.x == 0 && gs.y == 0) {
+      _timer = 0;
+      return;
+    }
+
     final pos = parent.body.position;
 
     if (!_initialized) {
@@ -43,9 +49,7 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
 
       if (distSq < _minDisplacement * _minDisplacement) {
         _consecutiveStucks++;
-        // Restore gravity in case stop() was called without resume().
         parent.resume();
-        // Escalate kick strength each consecutive stuck detection.
         final strength = 20.0 + (_consecutiveStucks * 10);
         final xKick = (_random.nextDouble() - 0.5) * strength;
         parent.body.linearVelocity = Vector2(xKick, strength);
