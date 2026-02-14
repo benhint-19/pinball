@@ -9,17 +9,27 @@ class LayerContactBehavior extends ContactBehavior<BodyComponent> {
   LayerContactBehavior({
     required Layer layer,
     bool onBegin = true,
-  }) {
-    if (onBegin) {
-      onBeginContact = (other, _) => _changeLayer(other, layer);
-    } else {
-      onEndContact = (other, _) => _changeLayer(other, layer);
-    }
+  })  : _layer = layer,
+        _onBegin = onBegin;
+
+  final Layer _layer;
+  final bool _onBegin;
+
+  @override
+  void beginContact(Object other, Contact contact) {
+    super.beginContact(other, contact);
+    if (_onBegin) _changeLayer(other);
   }
 
-  void _changeLayer(Object other, Layer layer) {
+  @override
+  void endContact(Object other, Contact contact) {
+    super.endContact(other, contact);
+    if (!_onBegin) _changeLayer(other);
+  }
+
+  void _changeLayer(Object other) {
     if (other is! Layered) return;
-    if (other.layer == layer) return;
-    other.layer = layer;
+    if (other.layer == _layer) return;
+    other.layer = _layer;
   }
 }
