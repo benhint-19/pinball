@@ -1,5 +1,4 @@
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:flutter/material.dart';
 import 'package:pinball_flame/pinball_flame.dart';
 
 /// {@template bumping_behavior}
@@ -14,29 +13,22 @@ class BumpingBehavior extends ContactBehavior {
   /// Determines how strong the bump is.
   final double _strength;
 
-  /// This is used to recognize the current state of a contact manifold in world
-  /// coordinates.
-  @visibleForTesting
-  final WorldManifold worldManifold = WorldManifold();
-
   @override
   void postSolve(Object other, Contact contact, ContactImpulse impulse) {
     super.postSolve(other, contact, impulse);
     if (other is! BodyComponent) return;
 
-    contact.getWorldManifold(worldManifold);
-    final normal = worldManifold.normal;
-
-    // forge2d 0.13.0: WorldManifold.normal points from bodyA→bodyB, but
-    // body ordering is non-deterministic.  Ensure the impulse always pushes
-    // the other body *away* from the parent (bumper/kicker).
-    final toOther = other.body.position - parent.body.position;
-    if (normal.dot(toOther) < 0) {
-      normal.negate();
-    }
+    // Push the ball directly away from the parent body center.
+    // Using position delta instead of contact normal avoids trapping
+    // at multi-fixture junctions (e.g. slingshot circle/edge seams)
+    // where opposing normals cancel each other out.
+    final direction = other.body.position - parent.body.position;
+    final length = direction.length;
+    if (length == 0) return;
+    direction.scale(1 / length); // normalize
 
     other.body.applyLinearImpulse(
-      normal..multiply(Vector2.all(other.body.mass * _strength)),
+      direction..scale(other.body.mass * _strength),
     );
   }
 }
