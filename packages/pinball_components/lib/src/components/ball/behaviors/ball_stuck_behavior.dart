@@ -4,130 +4,109 @@ import 'package:flame/components.dart';
 import 'package:pinball_components/pinball_components.dart';
 import 'package:pinball_flame/pinball_flame.dart';
 
-/// Detects when the [Ball] is stuck and nudges it free.
+/// Detects when the [Ball] is stuck and frees it.
 ///
-/// Uses two-tier detection:
-/// - **Fast** (0.3 s, 0.5 unit threshold): catches truly stationary balls and
-///   kicks them. After 3 consecutive kicks, teleports.
-/// - **Slow** (1.5 s, 3.0 unit threshold): catches balls that are vibrating /
-///   oscillating between surfaces but not making real progress. Teleports
-///   immediately.
+/// Samples the ball position every [_sampleInterval] seconds into a ring
+/// buffer.  When the buffer is full, compares the current position to the
+/// oldest sample.  If net displacement is below [_stuckThreshold] over the
+/// full [_windowSeconds] window, the ball is considered stuck.
 ///
-/// Skips checks while the ball is intentionally stopped (gravityScale zero).
+/// Recovery: first two detections apply a random kick; third and subsequent
+/// detections teleport the ball to a safe position above the flippers.
 class BallStuckBehavior extends Component with ParentIsA<Ball> {
-  // ── Fast tier ──
-  static const _fastInterval = 0.3;
-  static const _fastThreshold = 0.5;
-  static const _fastTeleportAfter = 3; // kicks before teleport
+  static const _sampleInterval = 0.1;
+  static const _windowSeconds = 2.0;
+  static const _stuckThreshold = 2.0; // units
+  static const _kicksBeforeTeleport = 2;
 
-  // ── Slow tier ──
-  static const _slowInterval = 1.5;
-  static const _slowThreshold = 3.0;
+  // Above the flippers (Y=43.6), centered on the board.
+  static final _safePosition = Vector2(0, 35);
 
-  // ── Teleport target: above the flippers ──
-  static final _safePosition = Vector2(0, 55);
+  static const _bufferSize = 20; // _windowSeconds / _sampleInterval
 
   final _random = math.Random();
-
-  double _fastTimer = 0;
-  double _slowTimer = 0;
-  double _fastX = 0;
-  double _fastY = 0;
-  double _slowX = 0;
-  double _slowY = 0;
-  bool _initialized = false;
-  int _kickCount = 0;
+  final List<double> _xBuf = List.filled(_bufferSize, 0);
+  final List<double> _yBuf = List.filled(_bufferSize, 0);
+  int _head = 0;
+  int _sampleCount = 0;
+  double _sampleTimer = 0;
+  int _stuckCount = 0;
 
   @override
   void update(double dt) {
     super.update(dt);
 
-    // Skip while ball is intentionally stopped (stop() zeroes gravityScale).
+    // Skip while intentionally stopped.
     final gs = parent.body.gravityScale;
     if (gs != null && gs.x == 0 && gs.y == 0) {
-      _reset();
+      _resetBuffer();
       return;
     }
 
-    // Skip while ball is on the launcher (waiting for plunger pull).
+    // Skip while on the launcher (waiting for plunger).
     if (parent.layer == Layer.launcher) {
-      _reset();
+      _resetBuffer();
       return;
     }
+
+    _sampleTimer += dt;
+    if (_sampleTimer < _sampleInterval) return;
+    _sampleTimer -= _sampleInterval;
 
     final pos = parent.body.position;
 
-    if (!_initialized) {
-      _fastX = pos.x;
-      _fastY = pos.y;
-      _slowX = pos.x;
-      _slowY = pos.y;
-      _initialized = true;
-      return;
-    }
+    // Write current position into the ring buffer.
+    _xBuf[_head] = pos.x;
+    _yBuf[_head] = pos.y;
+    _head = (_head + 1) % _bufferSize;
+    _sampleCount++;
 
-    _fastTimer += dt;
-    _slowTimer += dt;
+    // Need a full window before we can judge.
+    if (_sampleCount < _bufferSize) return;
 
-    // ── Slow tier: catches oscillating/vibrating stuck balls ──
-    if (_slowTimer >= _slowInterval) {
-      final dx = pos.x - _slowX;
-      final dy = pos.y - _slowY;
-      if (dx * dx + dy * dy < _slowThreshold * _slowThreshold) {
+    // Oldest sample is at _head (it just got overwritten above, so the
+    // oldest surviving sample is at _head which now points to the slot
+    // we're about to overwrite next time — but we already incremented,
+    // so _head IS the oldest).
+    final oldX = _xBuf[_head % _bufferSize];
+    final oldY = _yBuf[_head % _bufferSize];
+    final dx = pos.x - oldX;
+    final dy = pos.y - oldY;
+
+    if (dx * dx + dy * dy < _stuckThreshold * _stuckThreshold) {
+      _stuckCount++;
+      parent.resume();
+
+      if (_stuckCount >= _kicksBeforeTeleport) {
         _teleport();
-        return;
-      }
-      _slowX = pos.x;
-      _slowY = pos.y;
-      _slowTimer = 0;
-    }
-
-    // ── Fast tier: catches truly stationary balls ──
-    if (_fastTimer >= _fastInterval) {
-      final dx = pos.x - _fastX;
-      final dy = pos.y - _fastY;
-      if (dx * dx + dy * dy < _fastThreshold * _fastThreshold) {
-        _kickCount++;
-        parent.resume();
-        if (_kickCount >= _fastTeleportAfter) {
-          _teleport();
-        } else {
-          _kick();
-        }
       } else {
-        _kickCount = 0;
+        _kick();
       }
-      _fastX = pos.x;
-      _fastY = pos.y;
-      _fastTimer = 0;
+    } else {
+      _stuckCount = 0;
     }
-  }
-
-  void _reset() {
-    _fastTimer = 0;
-    _slowTimer = 0;
-    _kickCount = 0;
-    _initialized = false;
   }
 
   void _kick() {
-    final strength = 30.0 + (_kickCount * 15);
+    final strength = 30.0 + (_stuckCount * 15);
     final xKick = (_random.nextDouble() - 0.5) * strength;
-    parent.body.linearVelocity = Vector2(xKick, strength);
+    parent.body.linearVelocity = Vector2(xKick, -strength);
   }
 
   void _teleport() {
     parent.resume();
     parent.body.setTransform(_safePosition, parent.body.angle);
-    parent.body.linearVelocity = Vector2(0, 15);
+    // Negative Y = upward on screen, but we want it to fall down toward
+    // flippers, so give it a small positive-Y (downward) velocity.
+    parent.body.linearVelocity = Vector2(0, 10);
     parent.body.angularVelocity = 0;
-    _kickCount = 0;
-    // Reset both tiers so we don't immediately re-trigger.
-    _fastX = _safePosition.x;
-    _fastY = _safePosition.y;
-    _slowX = _safePosition.x;
-    _slowY = _safePosition.y;
-    _fastTimer = 0;
-    _slowTimer = 0;
+    _resetBuffer();
+    _stuckCount = 0;
+  }
+
+  void _resetBuffer() {
+    _sampleCount = 0;
+    _head = 0;
+    _sampleTimer = 0;
   }
 }
