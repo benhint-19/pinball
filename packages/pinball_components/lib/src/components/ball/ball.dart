@@ -64,9 +64,20 @@ class Ball extends BodyComponent with Layered, InitialPosition, ZIndex {
       type: BodyType.dynamic,
       userData: this,
       bullet: true,
+      // forge2d 0.13.0 defaults allowSleep to true. A ball that loses
+      // velocity on a zero-restitution wall contact will be put to sleep
+      // by the solver after ~0.5s, freezing it in place permanently.
+      allowSleep: false,
     );
 
-    return world.createBody(bodyDef)..createFixtureFromShape(shape);
+    return world.createBody(bodyDef)
+      ..createFixtureFromShape(
+        shape,
+        // forge2d 0.13.0 defaults restitution to 0. Without restitution
+        // the ball absorbs all perpendicular energy on wall contacts
+        // (walls lack BumpingBehavior). A small value gives natural bounce.
+        restitution: 0.3,
+      );
   }
 
   /// Immediately and completely [stop]s the ball.
