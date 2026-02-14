@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:pinball_components/pinball_components.dart';
@@ -10,26 +12,30 @@ import 'package:pinball_flame/pinball_flame.dart';
 class SparkyComputerSensorBallContactBehavior
     extends ContactBehavior<SparkyComputer> {
   @override
-  Future<void> beginContact(Object other, Contact contact) async {
+  void beginContact(Object other, Contact contact) {
     super.beginContact(other, contact);
     if (other is! Ball) return;
 
-    other.stop();
-    parent.bloc.onBallEntered();
-    await parent.add(
-      TimerComponent(
-        period: 1.5,
-        removeOnFinish: true,
-        onTick: () async {
-          other.resume();
-          await other.add(
-            BallTurboChargingBehavior(
-              impulse: Vector2(40, 110),
-            ),
-          );
-          parent.bloc.onBallTurboCharged();
-        },
-      ),
-    );
+    // Defer body modification to after the physics step completes.
+    // Modifying velocity/gravity during a contact callback is unsafe in Box2D.
+    scheduleMicrotask(() {
+      other.stop();
+      parent.bloc.onBallEntered();
+      parent.add(
+        TimerComponent(
+          period: 1.5,
+          removeOnFinish: true,
+          onTick: () async {
+            other.resume();
+            await other.add(
+              BallTurboChargingBehavior(
+                impulse: Vector2(40, 110),
+              ),
+            );
+            parent.bloc.onBallTurboCharged();
+          },
+        ),
+      );
+    });
   }
 }
