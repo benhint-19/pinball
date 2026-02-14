@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -35,6 +36,11 @@ class PinballGame extends Forge2DGame
         _l10n = l10n,
         super(gravity: Vector2(0, 30)) {
     images.prefix = '';
+    // Flame 1.18 added pauseWhenBackgrounded (defaults true), which didn't
+    // exist when this game was originally written. On web, UI interactions
+    // (clicking Play, overlays, BLoC rebuilds) shift focus away from the
+    // game canvas, pausing physics mid-collision. Disable it.
+    pauseWhenBackgrounded = false;
   }
 
   /// Identifier of the play button overlay.
@@ -45,6 +51,16 @@ class PinballGame extends Forge2DGame
 
   /// Identifier of the mobile controls overlay.
   static const mobileControlsOverlay = 'mobile_controls';
+
+  // When the browser tab is throttled or an overlay steals focus, the next
+  // frame can carry a very large dt. Feeding that into the physics solver
+  // causes tunneling, stuck balls, and velocity explosions. Clamp to 1/30s.
+  static const _maxDt = 1.0 / 30;
+
+  @override
+  void update(double dt) {
+    super.update(math.min(dt, _maxDt));
+  }
 
   @override
   Color backgroundColor() => Colors.transparent;
