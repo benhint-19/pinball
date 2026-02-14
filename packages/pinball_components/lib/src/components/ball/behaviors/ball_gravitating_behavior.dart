@@ -10,6 +10,8 @@ class BallGravitatingBehavior extends Component
   @override
   void update(double dt) {
     super.update(dt);
+    if (!isMounted || !parent.isMounted) return;
+
     final defaultGravity = gameRef.world.gravity.y;
 
     final maxXDeviationFromCenter = BoardDimensions.bounds.width / 2;
@@ -20,9 +22,13 @@ class BallGravitatingBehavior extends Component
     final positionalXForce = ((xDeviationFromCenter / maxXDeviationFromCenter) *
             maxXGravityPercentage) *
         defaultGravity;
-    final positionalYForce = math.sqrt(
-      math.pow(defaultGravity, 2) - math.pow(positionalXForce, 2),
-    );
+
+    // Guard: if positionalXForce exceeds defaultGravity (ball beyond board
+    // bounds), the sqrt argument goes negative → NaN → poisons the physics
+    // solver → entire game freezes. Clamp to keep the value valid.
+    final sqArg =
+        math.pow(defaultGravity, 2) - math.pow(positionalXForce, 2);
+    final positionalYForce = math.sqrt(math.max(0, sqArg));
 
     final gravityOverride = parent.body.gravityOverride;
     if (gravityOverride != null) {

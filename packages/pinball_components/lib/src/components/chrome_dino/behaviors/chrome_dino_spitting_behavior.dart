@@ -28,9 +28,13 @@ class ChromeDinoSpittingBehavior extends Component
   }
 
   void _spit() {
-    parent.bloc.state.ball!
-      ..descendants().whereType<SpriteComponent>().single.setOpacity(1)
-      ..body.linearVelocity = Vector2(-50, 0);
+    final ball = parent.bloc.state.ball;
+    if (ball == null || !ball.isMounted) {
+      parent.bloc.onSpit();
+      return;
+    }
+    ball.descendants().whereType<SpriteComponent>().firstOrNull?.setOpacity(1);
+    ball.body.linearVelocity = Vector2(-50, 0);
     parent.bloc.onSpit();
   }
 

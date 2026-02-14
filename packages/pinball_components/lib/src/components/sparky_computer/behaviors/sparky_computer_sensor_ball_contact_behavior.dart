@@ -21,6 +21,7 @@ class SparkyComputerSensorBallContactBehavior
         period: 1.5,
         removeOnFinish: true,
         onTick: () async {
+          if (!other.isMounted) return;
           other.resume();
           await other.add(
             BallTurboChargingBehavior(
