@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flame/components.dart';
 import 'package:pinball_components/pinball_components.dart';
+import 'package:pinball_flame/pinball_flame.dart';
 
 /// Detects when the [Ball] is stuck and nudges it free.
 ///
@@ -44,8 +45,13 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
     // Skip while ball is intentionally stopped (stop() zeroes gravityScale).
     final gs = parent.body.gravityScale;
     if (gs != null && gs.x == 0 && gs.y == 0) {
-      _fastTimer = 0;
-      _slowTimer = 0;
+      _reset();
+      return;
+    }
+
+    // Skip while ball is on the launcher (waiting for plunger pull).
+    if (parent.layer == Layer.launcher) {
+      _reset();
       return;
     }
 
@@ -95,6 +101,13 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
       _fastY = pos.y;
       _fastTimer = 0;
     }
+  }
+
+  void _reset() {
+    _fastTimer = 0;
+    _slowTimer = 0;
+    _kickCount = 0;
+    _initialized = false;
   }
 
   void _kick() {
