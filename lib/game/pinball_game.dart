@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as dev;
 import 'dart:math' as math;
 
 import 'package:flame/components.dart';
@@ -72,8 +71,9 @@ class PinballGame extends Forge2DGame
     if (_frameCount % 120 == 0) {
       final balls = descendants().whereType<Ball>().length;
       final status = _gameBloc.state.status;
-      dev.log(
-        'frame=$_frameCount dt=${dt.toStringAsFixed(4)} '
+      // ignore: avoid_print
+      print(
+        '[PINBALL] frame=$_frameCount dt=${dt.toStringAsFixed(4)} '
         'balls=$balls status=$status paused=$paused',
       );
     }
@@ -83,7 +83,8 @@ class PinballGame extends Forge2DGame
     _stopwatch.stop();
     final elapsed = _stopwatch.elapsedMilliseconds;
     if (elapsed > 50) {
-      dev.log('SLOW FRAME #$_frameCount: ${elapsed}ms (dt=${dt.toStringAsFixed(4)})');
+      // ignore: avoid_print
+      print('[PINBALL] SLOW FRAME #$_frameCount: ${elapsed}ms (dt=${dt.toStringAsFixed(4)})');
     }
   }
 
