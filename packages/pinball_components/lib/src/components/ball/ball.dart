@@ -28,7 +28,6 @@ class Ball extends BodyComponent with Layered, InitialPosition, ZIndex {
             ),
             BallScalingBehavior(),
             BallGravitatingBehavior(),
-            BallStuckBehavior(),
           ],
         ) {
     layer = Layer.board;
@@ -65,14 +64,9 @@ class Ball extends BodyComponent with Layered, InitialPosition, ZIndex {
       type: BodyType.dynamic,
       userData: this,
       bullet: true,
-      allowSleep: false,
     );
 
-    return world.createBody(bodyDef)
-      ..createFixtureFromShape(
-        shape,
-        restitution: 0.6,
-      );
+    return world.createBody(bodyDef)..createFixtureFromShape(shape);
   }
 
   /// Immediately and completely [stop]s the ball.

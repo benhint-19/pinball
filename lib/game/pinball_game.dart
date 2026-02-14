@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -51,15 +50,6 @@ class PinballGame extends Forge2DGame
 
   /// Identifier of the mobile controls overlay.
   static const mobileControlsOverlay = 'mobile_controls';
-
-  // Cap physics dt to prevent instability from large timesteps (e.g. when
-  // the browser tab regains focus after being throttled).
-  static const _maxDt = 1 / 30;
-
-  @override
-  void update(double dt) {
-    super.update(math.min(dt, _maxDt));
-  }
 
   @override
   Color backgroundColor() => Colors.transparent;
