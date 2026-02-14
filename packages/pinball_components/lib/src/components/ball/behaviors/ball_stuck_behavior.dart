@@ -36,7 +36,9 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
       final displacement = dx * dx + dy * dy;
 
       if (displacement < _minDisplacement * _minDisplacement) {
-        // Ball hasn't moved enough — kick it downward with some randomness.
+        // Restore gravity in case stop() was called without resume().
+        parent.resume();
+        // Kick the ball downward with some randomness.
         final xKick = (_random.nextDouble() - 0.5) * 30;
         parent.body.linearVelocity = Vector2(xKick, 20);
       }
