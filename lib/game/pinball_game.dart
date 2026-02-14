@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:js_interop';
 import 'dart:math' as math;
 
 import 'package:flame/components.dart';
@@ -18,6 +19,11 @@ import 'package:pinball_components/pinball_components.dart';
 import 'package:pinball_flame/pinball_flame.dart';
 import 'package:platform_helper/platform_helper.dart';
 import 'package:share_repository/share_repository.dart';
+
+@JS('console.log')
+external void _jsConsoleLog(JSString message);
+
+void _jsLog(String message) => _jsConsoleLog(message.toJS);
 
 class PinballGame extends Forge2DGame
     with HasKeyboardHandlerComponents, MultiTouchTapDetector {
@@ -68,11 +74,10 @@ class PinballGame extends Forge2DGame
 
     final clampedDt = math.min(dt, _maxDt);
 
-    if (_frameCount % 120 == 0) {
+    if (_frameCount <= 3 || _frameCount % 120 == 0) {
       final balls = descendants().whereType<Ball>().length;
       final status = _gameBloc.state.status;
-      // ignore: avoid_print
-      print(
+      _jsLog(
         '[PINBALL] frame=$_frameCount dt=${dt.toStringAsFixed(4)} '
         'balls=$balls status=$status paused=$paused',
       );
@@ -83,8 +88,7 @@ class PinballGame extends Forge2DGame
     _stopwatch.stop();
     final elapsed = _stopwatch.elapsedMilliseconds;
     if (elapsed > 50) {
-      // ignore: avoid_print
-      print('[PINBALL] SLOW FRAME #$_frameCount: ${elapsed}ms (dt=${dt.toStringAsFixed(4)})');
+      _jsLog('[PINBALL] SLOW FRAME #$_frameCount: ${elapsed}ms (dt=${dt.toStringAsFixed(4)})');
     }
   }
 
