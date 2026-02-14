@@ -9,10 +9,14 @@ import 'package:pinball_components/pinball_components.dart';
 /// far enough, it gets a kick. Skips checks while the ball is intentionally
 /// stopped (gravityScale zero, e.g. during SparkyComputer turbo charge).
 ///
-/// Each consecutive stuck detection escalates the kick strength.
+/// Escalation: kick → stronger kick → teleport above flippers.
 class BallStuckBehavior extends Component with ParentIsA<Ball> {
-  static const _checkInterval = 0.5;
-  static const _minDisplacement = 1.5;
+  static const _checkInterval = 0.35;
+  static const _minDisplacement = 1.0;
+
+  /// After this many consecutive stuck detections, teleport the ball to
+  /// a safe position above the flippers instead of just kicking.
+  static const _teleportThreshold = 4;
 
   final _random = math.Random();
   double _timer = 0;
@@ -50,9 +54,21 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
       if (distSq < _minDisplacement * _minDisplacement) {
         _consecutiveStucks++;
         parent.resume();
-        final strength = 20.0 + (_consecutiveStucks * 10);
-        final xKick = (_random.nextDouble() - 0.5) * strength;
-        parent.body.linearVelocity = Vector2(xKick, strength);
+
+        if (_consecutiveStucks >= _teleportThreshold) {
+          // Kicks aren't working — teleport above the flippers and drop.
+          parent.body.setTransform(
+            Vector2(0, 55),
+            parent.body.angle,
+          );
+          parent.body.linearVelocity = Vector2(0, 15);
+          parent.body.angularVelocity = 0;
+          _consecutiveStucks = 0;
+        } else {
+          final strength = 30.0 + (_consecutiveStucks * 15);
+          final xKick = (_random.nextDouble() - 0.5) * strength;
+          parent.body.linearVelocity = Vector2(xKick, strength);
+        }
       } else {
         _consecutiveStucks = 0;
       }
