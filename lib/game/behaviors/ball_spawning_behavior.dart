@@ -22,8 +22,10 @@ class BallSpawningBehavior extends Component
 
   @override
   void onNewState(GameState state) {
-    final plunger = gameRef.descendants().whereType<Plunger>().single;
-    final canvas = gameRef.descendants().whereType<ZCanvasComponent>().single;
+    final plunger = gameRef.descendants().whereType<Plunger>().firstOrNull;
+    final canvas =
+        gameRef.descendants().whereType<ZCanvasComponent>().firstOrNull;
+    if (plunger == null || canvas == null) return;
     final characterTheme = readBloc<CharacterThemeCubit, CharacterThemeState>()
         .state
         .characterTheme;

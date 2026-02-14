@@ -13,13 +13,21 @@ class DrainingBehavior extends ContactBehavior<Drain> with HasGameRef {
     if (other is! Ball) return;
 
     other.removeFromParent();
-    final ballsLeft = gameRef.descendants().whereType<Ball>().length;
-    if (ballsLeft - 1 == 0) {
-      ancestors()
-          .whereType<FlameBlocProvider<GameBloc, GameState>>()
-          .first
-          .bloc
-          .add(const RoundLost());
+
+    // Count balls *excluding* the one being removed (it hasn't been removed
+    // from the tree yet since removeFromParent is async).
+    final ballsLeft =
+        gameRef.descendants().whereType<Ball>().where((b) => b != other).length;
+    if (ballsLeft == 0) {
+      try {
+        ancestors()
+            .whereType<FlameBlocProvider<GameBloc, GameState>>()
+            .first
+            .bloc
+            .add(const RoundLost());
+      } catch (_) {
+        // Guard against missing ancestor during teardown.
+      }
     }
   }
 }

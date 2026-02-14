@@ -77,7 +77,7 @@ class Ball extends BodyComponent with Layered, InitialPosition, ZIndex {
         // forge2d 0.13.0 defaults restitution to 0. Without restitution
         // the ball absorbs all perpendicular energy on wall contacts
         // (walls lack BumpingBehavior). A small value gives natural bounce.
-        restitution: 0.5,
+        restitution: 0.3,
       );
   }
 

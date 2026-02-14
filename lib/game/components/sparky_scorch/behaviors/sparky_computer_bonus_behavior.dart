@@ -11,11 +11,14 @@ class SparkyComputerBonusBehavior extends Component
   void onMount() {
     super.onMount();
     final sparkyComputer = parent.firstChild<SparkyComputer>()!;
-    sparkyComputer.bloc.stream.listen((state) async {
-      final listenWhen = state == SparkyComputerState.withBall;
-      if (!listenWhen) return;
+    sparkyComputer.bloc.stream.listen(
+      (state) {
+        final listenWhen = state == SparkyComputerState.withBall;
+        if (!listenWhen) return;
 
-      bloc.add(const BonusActivated(GameBonus.sparkyTurboCharge));
-    });
+        bloc.add(const BonusActivated(GameBonus.sparkyTurboCharge));
+      },
+      onError: (_) {},
+    );
   }
 }

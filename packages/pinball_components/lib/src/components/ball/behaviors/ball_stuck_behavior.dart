@@ -27,6 +27,8 @@ class BallStuckBehavior extends Component with ParentIsA<Ball> {
   void update(double dt) {
     super.update(dt);
 
+    if (!isMounted || !parent.isMounted) return;
+
     final gs = parent.body.gravityScale;
     if (gs != null && gs.x == 0 && gs.y == 0) {
       _resetBuffer();

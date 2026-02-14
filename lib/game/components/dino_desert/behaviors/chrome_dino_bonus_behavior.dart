@@ -10,11 +10,14 @@ class ChromeDinoBonusBehavior extends Component
   void onMount() {
     super.onMount();
     final chromeDino = parent.firstChild<ChromeDino>()!;
-    chromeDino.bloc.stream.listen((state) {
-      final listenWhen = state.status == ChromeDinoStatus.chomping;
-      if (!listenWhen) return;
+    chromeDino.bloc.stream.listen(
+      (state) {
+        final listenWhen = state.status == ChromeDinoStatus.chomping;
+        if (!listenWhen) return;
 
-      bloc.add(const BonusActivated(GameBonus.dinoChomp));
-    });
+        bloc.add(const BonusActivated(GameBonus.dinoChomp));
+      },
+      onError: (_) {},
+    );
   }
 }

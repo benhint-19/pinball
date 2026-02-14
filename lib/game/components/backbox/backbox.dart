@@ -52,13 +52,18 @@ class Backbox extends PositionComponent with ZIndex, HasGameRef {
     await add(_display = Component());
     _build(_bloc.state);
 
-    _subscription = _bloc.stream.listen((state) {
-      final removals = _display.children.map((child) {
-        _display.remove(child);
-        return child.removed;
-      });
-      Future.wait(removals);
-      _build(state);
+    _subscription = _bloc.stream.listen((state) async {
+      try {
+        final removals = _display.children.map((child) {
+          _display.remove(child);
+          return child.removed;
+        }).toList();
+        await Future.wait(removals);
+        _build(state);
+      } catch (_) {
+        // Prevent unhandled exceptions from crashing the game loop.
+        _build(state);
+      }
     });
   }
 
