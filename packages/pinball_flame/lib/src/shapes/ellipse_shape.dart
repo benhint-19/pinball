@@ -12,13 +12,16 @@ class EllipseShape extends ChainShape {
     required this.majorRadius,
     required this.minorRadius,
   }) {
-    createChain(
-      calculateEllipse(
-        center: center,
-        majorRadius: majorRadius,
-        minorRadius: minorRadius,
-      ),
+    final points = calculateEllipse(
+      center: center,
+      majorRadius: majorRadius,
+      minorRadius: minorRadius,
     );
+    // calculateEllipse sweeps 0..2π inclusive, so the first and last points
+    // are identical. Remove the duplicate so createLoop can properly close
+    // the chain with correct ghost vertices at the seam.
+    points.removeLast();
+    createLoop(points);
   }
 
   /// The top left corner of the ellipse.
