@@ -15,16 +15,9 @@ class DinoDesert extends Component {
   DinoDesert()
       : super(
           children: [
-            ChromeDino(
-              children: [
-                ScoringContactBehavior(points: Points.twoHundredThousand)
-                  ..applyTo(['inside_mouth']),
-              ],
-            )..initialPosition = Vector2(12.2, -6.9),
             _BarrierBehindDino(),
             DinoWalls(),
             Slingshots(),
-            ChromeDinoBonusBehavior(),
           ],
         );
 
