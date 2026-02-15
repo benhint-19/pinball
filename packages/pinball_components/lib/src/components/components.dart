@@ -37,5 +37,6 @@ export 'spaceship_rail.dart';
 export 'spaceship_ramp/spaceship_ramp.dart';
 export 'sparky_animatronic.dart';
 export 'sparky_bumper/sparky_bumper.dart';
+export 'toly_head/toly_head.dart';
 export 'sparky_computer/sparky_computer.dart';
 export 'z_indexes.dart';

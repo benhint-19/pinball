@@ -49,6 +49,11 @@ class AndroidAcres extends Component {
               create: AndroidSpaceshipCubit.new,
               children: [
                 AndroidSpaceship(position: Vector2(-26.5, -28.5)),
+                TolyHead(
+                  children: [
+                    ScoringContactBehavior(points: Points.twoHundredThousand),
+                  ],
+                )..initialPosition = Vector2(-26, -28.25),
                 AndroidSpaceshipBonusBehavior(),
               ],
             ),
