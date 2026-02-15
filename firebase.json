@@ -1,0 +1,33 @@
+{
+    "hosting": {
+        "public": "build/web",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ],
+        "headers": [
+            {
+                "source": "**/*.@(js|css|png|jpg|jpeg|gif|svg|woff2|wasm)",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "public, max-age=31536000, immutable"
+                    }
+                ]
+            }
+        ]
+    },
+    "firestore": {
+        "rules": "firestore.rules"
+    },
+    "storage": {
+        "rules": "storage.rules"
+    }
+}

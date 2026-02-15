@@ -130,8 +130,6 @@ app.*.map.json
 
 # Firebase related
 .firebase
-firebase.json
-lib/firebase_options.dart
 
 # Generated Localization
 lib/l10n/generated/
