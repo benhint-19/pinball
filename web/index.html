@@ -78,6 +78,32 @@
     ga('create', 'UA-67589403-1', 'auto');
     ga('send', 'pageview');
   </script>
+  <script>
+    // Unlock HTML5 Audio on first user interaction.
+    // Browsers block programmatic Audio.play() until a user gesture has triggered
+    // at least one successful play(). This plays a tiny silent WAV to "warm up"
+    // the audio system, then removes the listeners.
+    (function() {
+      var unlocked = false;
+      function unlock() {
+        if (unlocked) return;
+        unlocked = true;
+        // Minimal valid WAV: 44-byte header + 1 sample of silence
+        var silentWav = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+        var a = new Audio(silentWav);
+        a.volume = 0;
+        a.play().then(function() {
+          a.pause();
+        }).catch(function() {});
+        document.removeEventListener('click', unlock);
+        document.removeEventListener('touchstart', unlock);
+        document.removeEventListener('keydown', unlock);
+      }
+      document.addEventListener('click', unlock);
+      document.addEventListener('touchstart', unlock);
+      document.addEventListener('keydown', unlock);
+    })();
+  </script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>

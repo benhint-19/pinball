@@ -97,6 +97,8 @@ class _LoopAudio extends _Audio {
 
   _JSAudio? _player;
   bool _playing = false;
+  int _retries = 0;
+  static const _maxRetries = 20; // 10 seconds of retries
 
   @override
   Future<void> load() async {
@@ -109,13 +111,28 @@ class _LoopAudio extends _Audio {
   void play() {
     if (_playing) return;
     _playing = true;
+    _retries = 0;
+    _tryPlay();
+  }
+
+  void _tryPlay() {
     final a = _JSAudio(_url);
     a.volume = volume;
     a.loop = true;
     _player = a;
     a.play().toDart.catchError((_) {
-      // Browser blocked autoplay – retry on next user gesture.
+      // Browser blocked autoplay – retry after a short delay.
+      // The next user gesture (click/key) will have unlocked audio.
       _playing = false;
+      _retries++;
+      if (_retries < _maxRetries) {
+        Future<void>.delayed(const Duration(milliseconds: 500), () {
+          if (!_playing) {
+            _playing = true;
+            _tryPlay();
+          }
+        });
+      }
       return null;
     });
   }
