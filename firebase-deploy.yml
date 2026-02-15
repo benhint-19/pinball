@@ -1,0 +1,49 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Get dependencies
+        run: |
+          flutter pub get
+          cd packages/pinball_audio && flutter pub get && cd ../..
+          cd packages/pinball_components && flutter pub get && cd ../..
+          cd packages/pinball_theme && flutter pub get && cd ../..
+
+      - name: Generate l10n
+        run: flutter gen-l10n
+
+      - name: Run build_runner (root)
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Run build_runner (pinball_audio)
+        run: cd packages/pinball_audio && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Run build_runner (pinball_components)
+        run: cd packages/pinball_components && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Run build_runner (pinball_theme)
+        run: cd packages/pinball_theme && flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build web
+        run: flutter build web --release --no-tree-shake-icons
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: seeker-pinball
