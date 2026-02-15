@@ -44,9 +44,13 @@ class $AssetsImagesGen {
       const $AssetsImagesMultiplierGen();
   $AssetsImagesPlungerGen get plunger => const $AssetsImagesPlungerGen();
   $AssetsImagesScoreGen get score => const $AssetsImagesScoreGen();
+  $AssetsImagesSeekerPhoneGen get seekerPhone =>
+      const $AssetsImagesSeekerPhoneGen();
   $AssetsImagesSignpostGen get signpost => const $AssetsImagesSignpostGen();
   $AssetsImagesSkillShotGen get skillShot => const $AssetsImagesSkillShotGen();
   $AssetsImagesSlingshotGen get slingshot => const $AssetsImagesSlingshotGen();
+  $AssetsImagesSolanaCoinGen get solanaCoin =>
+      const $AssetsImagesSolanaCoinGen();
   $AssetsImagesSparkyGen get sparky => const $AssetsImagesSparkyGen();
 }
 
@@ -55,6 +59,11 @@ class $AssetsImagesAndroidGen {
 
   $AssetsImagesAndroidBumperGen get bumper =>
       const $AssetsImagesAndroidBumperGen();
+
+  /// File path: assets/images/android/mineshaft.png
+  AssetGenImage get mineshaft =>
+      const AssetGenImage('assets/images/android/mineshaft.png');
+
   $AssetsImagesAndroidRailGen get rail => const $AssetsImagesAndroidRailGen();
   $AssetsImagesAndroidRampGen get ramp => const $AssetsImagesAndroidRampGen();
   $AssetsImagesAndroidSpaceshipGen get spaceship =>
@@ -785,6 +794,26 @@ class $AssetsImagesSparkyBumperCGen {
   /// File path: assets/images/sparky/bumper/c/lit.png
   AssetGenImage get lit =>
       const AssetGenImage('assets/images/sparky/bumper/c/lit.png');
+}
+
+class $AssetsImagesSolanaCoinGen {
+  const $AssetsImagesSolanaCoinGen();
+
+  /// File path: assets/images/solana_coin/idle.png
+  AssetGenImage get idle =>
+      const AssetGenImage('assets/images/solana_coin/idle.png');
+
+  /// File path: assets/images/solana_coin/flip.png
+  AssetGenImage get flip =>
+      const AssetGenImage('assets/images/solana_coin/flip.png');
+}
+
+class $AssetsImagesSeekerPhoneGen {
+  const $AssetsImagesSeekerPhoneGen();
+
+  /// File path: assets/images/seeker_phone/slide.png
+  AssetGenImage get slide =>
+      const AssetGenImage('assets/images/seeker_phone/slide.png');
 }
 
 class Assets {

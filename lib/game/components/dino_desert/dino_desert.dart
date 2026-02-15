@@ -15,12 +15,12 @@ class DinoDesert extends Component {
   DinoDesert()
       : super(
           children: [
-            SolanaToken(
+            SeekerPhone(
               children: [
                 ScoringContactBehavior(points: Points.twoHundredThousand),
-                SolanaTokenSwingingBehavior(),
+                SeekerPhoneSlidingBehavior(),
               ],
-            )..initialPosition = Vector2(12.2, -6.9),
+            )..initialPosition = Vector2(20, -10),
             _BarrierBehindDino(),
             DinoWalls(),
             Slingshots(),

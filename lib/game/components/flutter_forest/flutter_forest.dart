@@ -17,6 +17,11 @@ class FlutterForest extends Component with ZIndex {
   FlutterForest()
       : super(
           children: [
+            SolanaCoin(
+              children: [
+                ScoringContactBehavior(points: Points.twoHundredThousand),
+              ],
+            )..initialPosition = Vector2(16, -55),
             FlameMultiBlocProvider(
               providers: [
                 FlameBlocProvider<SignpostCubit, SignpostState>(

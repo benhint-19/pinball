@@ -45,6 +45,7 @@ class AndroidAcres extends Component {
                 CowBumperNoiseBehavior(),
               ],
             )..initialPosition = Vector2(-20.7, -13),
+            Mineshaft(position: Vector2(-26.5, -36.0)),
             FlameBlocProvider<AndroidSpaceshipCubit, AndroidSpaceshipState>(
               create: AndroidSpaceshipCubit.new,
               children: [
