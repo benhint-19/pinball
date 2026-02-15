@@ -35,6 +35,7 @@ export 'skill_shot/skill_shot.dart';
 export 'slingshot.dart';
 export 'spaceship_rail.dart';
 export 'spaceship_ramp/spaceship_ramp.dart';
+export 'solana_token/solana_token.dart';
 export 'sparky_animatronic.dart';
 export 'sparky_bumper/sparky_bumper.dart';
 export 'toly_head/toly_head.dart';

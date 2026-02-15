@@ -62,22 +62,22 @@ class _TolyHeadSpriteAnimation extends SpriteAnimationComponent
       Assets.images.android.spaceship.tolyHead.keyName,
     );
 
-    const framesPerRow = 8;
+    const framesPerRow = 16;
     const framesPerColumn = 1;
     final textureSize = Vector2(
       spriteSheet.width / framesPerRow,
       spriteSheet.height / framesPerColumn,
     );
-    // Scale: the sprite sheet is 1024x128, each frame 128x128.
-    // At /10 that's 12.8 world units – too big. Use /20 for ~6.4 units.
-    size = textureSize / 20;
+    // Scale: 2048x128 sheet, each frame 128x128.
+    // /10 = 12.8 world units – good visible size on the spaceship.
+    size = textureSize / 10;
 
     animation = SpriteAnimation.fromFrameData(
       spriteSheet,
       SpriteAnimationData.sequenced(
         amount: framesPerRow * framesPerColumn,
         amountPerRow: framesPerRow,
-        stepTime: 1 / 6, // ~6 FPS rotation = full spin in ~1.3s
+        stepTime: 1 / 12, // 12 FPS = smooth spin in ~1.3s
         textureSize: textureSize,
       ),
     );

@@ -140,6 +140,10 @@ class $AssetsImagesDinoGen {
   AssetGenImage get topWall =>
       const AssetGenImage('assets/images/dino/top_wall.png');
 
+  /// File path: assets/images/dino/solana_token.png
+  AssetGenImage get solanaToken =>
+      const AssetGenImage('assets/images/dino/solana_token.png');
+
   /// File path: assets/images/dino/top_wall_tunnel.png
   AssetGenImage get topWallTunnel =>
       const AssetGenImage('assets/images/dino/top_wall_tunnel.png');
