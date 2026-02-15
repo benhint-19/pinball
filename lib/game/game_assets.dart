@@ -62,6 +62,8 @@ extension PinballGameAssetsX on PinballGame {
       () => images
           .load(components.Assets.images.android.spaceship.animatronic.keyName),
       () => images
+          .load(components.Assets.images.android.spaceship.tolyHead.keyName),
+      () => images
           .load(components.Assets.images.android.spaceship.lightBeam.keyName),
       () => images
           .load(components.Assets.images.android.ramp.boardOpening.keyName),

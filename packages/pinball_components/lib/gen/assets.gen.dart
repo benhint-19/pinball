@@ -410,6 +410,10 @@ class $AssetsImagesAndroidSpaceshipGen {
   /// File path: assets/images/android/spaceship/saucer.png
   AssetGenImage get saucer =>
       const AssetGenImage('assets/images/android/spaceship/saucer.png');
+
+  /// File path: assets/images/android/spaceship/toly_head.png
+  AssetGenImage get tolyHead =>
+      const AssetGenImage('assets/images/android/spaceship/toly_head.png');
 }
 
 class $AssetsImagesBackboxButtonGen {
