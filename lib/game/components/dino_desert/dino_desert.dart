@@ -20,7 +20,7 @@ class DinoDesert extends Component {
                 ScoringContactBehavior(points: Points.twoHundredThousand),
                 SeekerPhoneSlidingBehavior(),
               ],
-            )..initialPosition = Vector2(20, -10),
+            )..initialPosition = Vector2(14, -7),
             _BarrierBehindDino(),
             DinoWalls(),
             Slingshots(),
