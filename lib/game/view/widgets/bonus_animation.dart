@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flame/flame.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -126,8 +128,17 @@ class _BonusAnimationState extends State<BonusAnimation>
 
   @override
   Widget build(BuildContext context) {
+    ui.Image? image;
+    try {
+      image = Flame.images.fromCache(widget._imagePath);
+    } catch (_) {
+      // Image failed to load (404 etc). Fire completion and show nothing.
+      widget._onCompleted?.call();
+      return const SizedBox.shrink();
+    }
+
     final spriteSheet = SpriteSheet.fromColumnsAndRows(
-      image: Flame.images.fromCache(widget._imagePath),
+      image: image,
       columns: 8,
       rows: 9,
     );

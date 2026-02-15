@@ -56,6 +56,9 @@ class _SelectedCharacterState extends State<SelectedCharacter>
 
   @override
   Widget build(BuildContext context) {
+    if (_controller == null) {
+      return const SizedBox.shrink();
+    }
     return Column(
       children: [
         Text(
@@ -84,23 +87,30 @@ class _SelectedCharacterState extends State<SelectedCharacter>
   }
 
   void _setupCharacterAnimation() {
-    final spriteSheet = SpriteSheet.fromColumnsAndRows(
-      image: Flame.images.fromCache(widget.currentCharacter.animation.keyName),
-      columns: 12,
-      rows: 6,
-    );
-    final animation = spriteSheet.createAnimation(
-      row: 0,
-      stepTime: 1 / 12,
-      to: spriteSheet.rows * spriteSheet.columns,
-    );
-    if (_controller != null) _controller?.dispose();
-    _controller = SpriteAnimationController(
-      vsync: this,
-      animation: animation,
-      animationTicker: animation.createTicker(),
-    )
-      ..forward()
-      ..repeat();
+    try {
+      final spriteSheet = SpriteSheet.fromColumnsAndRows(
+        image: Flame.images.fromCache(
+          widget.currentCharacter.animation.keyName,
+        ),
+        columns: 12,
+        rows: 6,
+      );
+      final animation = spriteSheet.createAnimation(
+        row: 0,
+        stepTime: 1 / 12,
+        to: spriteSheet.rows * spriteSheet.columns,
+      );
+      if (_controller != null) _controller?.dispose();
+      _controller = SpriteAnimationController(
+        vsync: this,
+        animation: animation,
+        animationTicker: animation.createTicker(),
+      )
+        ..forward()
+        ..repeat();
+    } catch (_) {
+      // Image not cached (failed to load). Show nothing instead of crashing.
+      _controller = null;
+    }
   }
 }

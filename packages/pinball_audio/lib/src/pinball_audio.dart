@@ -93,7 +93,11 @@ class _SimplePlayAudio extends _Audio {
 
   @override
   void play() {
-    playSingleAudio(path, volume: volume ?? 1);
+    try {
+      playSingleAudio(path, volume: volume ?? 1);
+    } catch (_) {
+      // Silently ignore - audio failure must not crash the game loop.
+    }
   }
 }
 
@@ -115,7 +119,11 @@ class _LoopAudio extends _Audio {
 
   @override
   void play() {
-    loopSingleAudio(path, volume: volume ?? 1);
+    try {
+      loopSingleAudio(path, volume: volume ?? 1);
+    } catch (_) {
+      // Silently ignore - audio failure must not crash the game loop.
+    }
   }
 }
 
@@ -165,7 +173,13 @@ class _SingleAudioPool extends _Audio {
   }
 
   @override
-  void play() => pool.start();
+  void play() {
+    try {
+      pool.start();
+    } catch (_) {
+      // Silently ignore - audio failure must not crash the game loop.
+    }
+  }
 }
 
 class _RandomABAudio extends _Audio {
@@ -206,7 +220,11 @@ class _RandomABAudio extends _Audio {
 
   @override
   void play() {
-    (seed.nextBool() ? audioA : audioB).start(volume: volume ?? 1);
+    try {
+      (seed.nextBool() ? audioA : audioB).start(volume: volume ?? 1);
+    } catch (_) {
+      // Silently ignore - audio failure must not crash the game loop.
+    }
   }
 }
 
@@ -234,7 +252,11 @@ class _ThrottledAudio extends _Audio {
     if (_lastPlayed == null ||
         (_lastPlayed != null && now.difference(_lastPlayed!) > duration)) {
       _lastPlayed = now;
-      playSingleAudio(path);
+      try {
+        playSingleAudio(path);
+      } catch (_) {
+        // Silently ignore - audio failure must not crash the game loop.
+      }
     }
   }
 }
@@ -369,10 +391,12 @@ class PinballAudioPlayer {
 
   /// Plays the received audio.
   void play(PinballAudio audio) {
-    assert(
-      audios.containsKey(audio),
-      'Tried to play unregistered audio $audio',
-    );
-    audios[audio]?.play();
+    try {
+      audios[audio]?.play();
+    } catch (_) {
+      // Silently ignore - audio failure must never crash the game loop.
+      // Contact callbacks (bumper, kicker, flipper) call this synchronously
+      // during physics steps; an unhandled throw here freezes the game.
+    }
   }
 }
