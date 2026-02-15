@@ -6,3 +6,4 @@ export 'play_button_overlay.dart';
 export 'replay_button_overlay.dart';
 export 'round_count_display.dart';
 export 'score_view.dart';
+export 'sound_toggle_overlay.dart';

@@ -70,6 +70,10 @@ typedef PreCacheSingleAudio = Future<void> Function(String);
 /// Defines the contract for configuring an [AudioCache] instance.
 typedef ConfigureAudioCache = void Function(AudioCache);
 
+/// Prepends the package path so AudioCache (with empty prefix) resolves
+/// to the correct `assets/packages/pinball_audio/...` URL on web.
+String _pkgPath(String path) => 'packages/pinball_audio/$path';
+
 abstract class _Audio {
   void play();
   Future<void> load();
@@ -89,12 +93,12 @@ class _SimplePlayAudio extends _Audio {
   final double? volume;
 
   @override
-  Future<void> load() => preCacheSingleAudio(path);
+  Future<void> load() => preCacheSingleAudio(_pkgPath(path));
 
   @override
   void play() {
     try {
-      playSingleAudio(path, volume: volume ?? 1);
+      playSingleAudio(_pkgPath(path), volume: volume ?? 1);
     } catch (_) {
       // Silently ignore - audio failure must not crash the game loop.
     }
@@ -115,12 +119,12 @@ class _LoopAudio extends _Audio {
   final double? volume;
 
   @override
-  Future<void> load() => preCacheSingleAudio(path);
+  Future<void> load() => preCacheSingleAudio(_pkgPath(path));
 
   @override
   void play() {
     try {
-      loopSingleAudio(path, volume: volume ?? 1);
+      loopSingleAudio(_pkgPath(path), volume: volume ?? 1);
     } catch (_) {
       // Silently ignore - audio failure must not crash the game loop.
     }
@@ -166,7 +170,7 @@ class _SingleAudioPool extends _Audio {
   @override
   Future<void> load() async {
     pool = await createAudioPool(
-      source: AssetSource(path),
+      source: AssetSource(_pkgPath(path)),
       maxPlayers: maxPlayers,
       audioCache: FlameAudio.audioCache,
     );
@@ -205,12 +209,12 @@ class _RandomABAudio extends _Audio {
     await Future.wait(
       [
         createAudioPool(
-          source: AssetSource(audioAssetA),
+          source: AssetSource(_pkgPath(audioAssetA)),
           maxPlayers: 4,
           audioCache: FlameAudio.audioCache,
         ).then((pool) => audioA = pool),
         createAudioPool(
-          source: AssetSource(audioAssetB),
+          source: AssetSource(_pkgPath(audioAssetB)),
           maxPlayers: 4,
           audioCache: FlameAudio.audioCache,
         ).then((pool) => audioB = pool),
@@ -244,7 +248,7 @@ class _ThrottledAudio extends _Audio {
   DateTime? _lastPlayed;
 
   @override
-  Future<void> load() => preCacheSingleAudio(path);
+  Future<void> load() => preCacheSingleAudio(_pkgPath(path));
 
   @override
   void play() {
@@ -253,7 +257,7 @@ class _ThrottledAudio extends _Audio {
         (_lastPlayed != null && now.difference(_lastPlayed!) > duration)) {
       _lastPlayed = now;
       try {
-        playSingleAudio(path);
+        playSingleAudio(_pkgPath(path));
       } catch (_) {
         // Silently ignore - audio failure must not crash the game loop.
       }
@@ -280,7 +284,7 @@ class PinballAudioPlayer {
             preCacheSingleAudio ?? FlameAudio.audioCache.load,
         _configureAudioCache = configureAudioCache ??
             ((AudioCache a) {
-              a.prefix = 'packages/pinball_audio/';
+              a.prefix = '';
             }),
         _seed = seed ?? Random() {
     audios = {
@@ -377,6 +381,16 @@ class PinballAudioPlayer {
 
   final Random _seed;
 
+  bool _muted = false;
+
+  /// Whether audio playback is currently muted.
+  bool get muted => _muted;
+
+  /// Toggles the mute state.
+  void toggleMute() {
+    _muted = !_muted;
+  }
+
   /// Registered audios on the Player.
   @visibleForTesting
   // ignore: library_private_types_in_public_api
@@ -389,8 +403,9 @@ class PinballAudioPlayer {
     return audios.values.map((a) => a.load).toList();
   }
 
-  /// Plays the received audio.
+  /// Plays the received audio. Does nothing if muted.
   void play(PinballAudio audio) {
+    if (_muted) return;
     try {
       audios[audio]?.play();
     } catch (_) {

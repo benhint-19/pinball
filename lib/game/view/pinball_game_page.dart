@@ -98,7 +98,10 @@ class PinballGameLoadedView extends StatelessWidget {
               child: GameWidget<PinballGame>(
                 game: game,
                 focusNode: game.focusNode,
-                initialActiveOverlays: const [PinballGame.playButtonOverlay],
+                initialActiveOverlays: const [
+                  PinballGame.playButtonOverlay,
+                  PinballGame.soundToggleOverlay,
+                ],
                 overlayBuilderMap: {
                   PinballGame.playButtonOverlay: (_, game) => const Positioned(
                         bottom: 20,
@@ -118,6 +121,12 @@ class PinballGameLoadedView extends StatelessWidget {
                         right: 0,
                         left: 0,
                         child: ReplayButtonOverlay(),
+                      ),
+                  PinballGame.soundToggleOverlay: (context, game) =>
+                      const Positioned(
+                        top: 8,
+                        right: 8,
+                        child: SoundToggleOverlay(),
                       ),
                 },
               ),

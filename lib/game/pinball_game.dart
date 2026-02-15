@@ -52,6 +52,9 @@ class PinballGame extends Forge2DGame
   /// Identifier of the mobile controls overlay.
   static const mobileControlsOverlay = 'mobile_controls';
 
+  /// Identifier of the sound toggle overlay.
+  static const soundToggleOverlay = 'sound_toggle';
+
   // When the browser tab is throttled or an overlay steals focus, the next
   // frame can carry a very large dt. Feeding that into the physics solver
   // causes tunneling, stuck balls, and velocity explosions. Clamp to 1/30s.
