@@ -1,60 +1,202 @@
+import 'dart:js_interop';
 import 'dart:math';
 
 import 'package:clock/clock.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:pinball_audio/gen/assets.gen.dart';
 
+// ---------------------------------------------------------------------------
+// Minimal JS interop for HTML Audio – bypasses audioplayers entirely.
+// ---------------------------------------------------------------------------
+
+@JS('Audio')
+extension type _JSAudio._(JSObject _) implements JSObject {
+  external factory _JSAudio([String src]);
+  external JSPromise<JSAny?> play();
+  external set volume(double v);
+  external double get volume;
+  external set loop(bool v);
+  external set currentTime(double v);
+  external void load();
+  external void pause();
+}
+
+/// Build the web URL for an asset inside this package.
+///
+/// Flutter web serves package assets at:
+///   `assets/packages/<pkg>/assets/<subpath>`
+///
+/// [Assets.sfx.launcher] returns `'assets/sfx/launcher.mp3'` so we just
+/// prepend `'assets/packages/pinball_audio/'`.
+String _webUrl(String assetGenPath) =>
+    'assets/packages/pinball_audio/$assetGenPath';
+
+// ---------------------------------------------------------------------------
+// Sound identifiers
+// ---------------------------------------------------------------------------
+
 /// Sounds available to play.
 enum PinballAudio {
-  /// Google.
   google,
-
-  /// Bumper.
   bumper,
-
-  /// Cow moo.
   cowMoo,
-
-  /// Background music.
   backgroundMusic,
-
-  /// IO Pinball voice over.
   ioPinballVoiceOver,
-
-  /// Game over.
   gameOverVoiceOver,
-
-  /// Launcher.
   launcher,
-
-  /// Kicker.
   kicker,
-
-  /// Rollover.
   rollover,
-
-  /// Sparky.
   sparky,
-
-  /// Android.
   android,
-
-  /// Dino.
   dino,
-
-  /// Dash.
   dash,
-
-  /// Flipper.
   flipper,
 }
 
+// ---------------------------------------------------------------------------
+// Internal audio wrappers (all use raw JS Audio)
+// ---------------------------------------------------------------------------
+
+abstract class _Audio {
+  void play();
+  Future<void> load();
+}
+
+/// A simple one-shot sound.
+class _SimpleAudio extends _Audio {
+  _SimpleAudio({required this.path, this.volume = 1.0});
+
+  final String path;
+  final double volume;
+  late final String _url = _webUrl(path);
+
+  @override
+  Future<void> load() async {
+    // Pre-fetch so the browser caches the file.
+    final a = _JSAudio(_url);
+    a.volume = 0;
+    a.load();
+  }
+
+  @override
+  void play() {
+    final a = _JSAudio(_url);
+    a.volume = volume;
+    a.play().toDart.catchError((_) => null);
+  }
+}
+
+/// A looping sound (background music). Only plays once even if play() is
+/// called multiple times.
+class _LoopAudio extends _Audio {
+  _LoopAudio({required this.path, this.volume = 1.0});
+
+  final String path;
+  final double volume;
+  late final String _url = _webUrl(path);
+
+  _JSAudio? _player;
+  bool _playing = false;
+
+  @override
+  Future<void> load() async {
+    final a = _JSAudio(_url);
+    a.volume = 0;
+    a.load();
+  }
+
+  @override
+  void play() {
+    if (_playing) return;
+    _playing = true;
+    final a = _JSAudio(_url);
+    a.volume = volume;
+    a.loop = true;
+    _player = a;
+    a.play().toDart.catchError((_) {
+      // Browser blocked autoplay – retry on next user gesture.
+      _playing = false;
+      return null;
+    });
+  }
+
+  void stop() {
+    _player?.pause();
+    _playing = false;
+  }
+}
+
+/// Randomly picks between two sounds.
+class _RandomABAudio extends _Audio {
+  _RandomABAudio({
+    required this.pathA,
+    required this.pathB,
+    required this.seed,
+    this.volume = 1.0,
+  });
+
+  final String pathA;
+  final String pathB;
+  final Random seed;
+  final double volume;
+  late final String _urlA = _webUrl(pathA);
+  late final String _urlB = _webUrl(pathB);
+
+  @override
+  Future<void> load() async {
+    _JSAudio(_urlA).load();
+    _JSAudio(_urlB).load();
+  }
+
+  @override
+  void play() {
+    final url = seed.nextBool() ? _urlA : _urlB;
+    final a = _JSAudio(url);
+    a.volume = volume;
+    a.play().toDart.catchError((_) => null);
+  }
+}
+
+/// A throttled sound that won't replay within [duration].
+class _ThrottledAudio extends _Audio {
+  _ThrottledAudio({
+    required this.path,
+    required this.duration,
+    this.volume = 1.0,
+  });
+
+  final String path;
+  final Duration duration;
+  final double volume;
+  late final String _url = _webUrl(path);
+  DateTime? _lastPlayed;
+
+  @override
+  Future<void> load() async {
+    _JSAudio(_url).load();
+  }
+
+  @override
+  void play() {
+    final now = clock.now();
+    if (_lastPlayed == null || now.difference(_lastPlayed!) > duration) {
+      _lastPlayed = now;
+      final a = _JSAudio(_url);
+      a.volume = volume;
+      a.play().toDart.catchError((_) => null);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// These typedefs are kept for test compatibility (tests mock them).
+// ---------------------------------------------------------------------------
+
 /// Defines the contract of the creation of an [AudioPool].
-typedef CreateAudioPool = Future<AudioPool> Function({
-  required Source source,
+typedef CreateAudioPool = Future<void> Function({
+  required dynamic source,
   required int maxPlayers,
-  AudioCache? audioCache,
+  dynamic audioCache,
   int minPlayers,
 });
 
@@ -67,203 +209,12 @@ typedef LoopSingleAudio = Future<void> Function(String, {double volume});
 /// Defines the contract for pre fetching an audio.
 typedef PreCacheSingleAudio = Future<void> Function(String);
 
-/// Defines the contract for configuring an [AudioCache] instance.
-typedef ConfigureAudioCache = void Function(AudioCache);
+/// Defines the contract for configuring an audio cache instance.
+typedef ConfigureAudioCache = void Function(dynamic);
 
-/// Prepends the package path so AudioCache (with empty prefix) resolves
-/// to the correct `assets/packages/pinball_audio/...` URL on web.
-String _pkgPath(String path) => 'packages/pinball_audio/$path';
-
-abstract class _Audio {
-  void play();
-  Future<void> load();
-}
-
-class _SimplePlayAudio extends _Audio {
-  _SimplePlayAudio({
-    required this.preCacheSingleAudio,
-    required this.playSingleAudio,
-    required this.path,
-    this.volume,
-  });
-
-  final PreCacheSingleAudio preCacheSingleAudio;
-  final PlaySingleAudio playSingleAudio;
-  final String path;
-  final double? volume;
-
-  @override
-  Future<void> load() => preCacheSingleAudio(_pkgPath(path));
-
-  @override
-  void play() {
-    try {
-      playSingleAudio(_pkgPath(path), volume: volume ?? 1);
-    } catch (_) {
-      // Silently ignore - audio failure must not crash the game loop.
-    }
-  }
-}
-
-class _LoopAudio extends _Audio {
-  _LoopAudio({
-    required this.preCacheSingleAudio,
-    required this.loopSingleAudio,
-    required this.path,
-    this.volume,
-  });
-
-  final PreCacheSingleAudio preCacheSingleAudio;
-  final LoopSingleAudio loopSingleAudio;
-  final String path;
-  final double? volume;
-
-  @override
-  Future<void> load() => preCacheSingleAudio(_pkgPath(path));
-
-  @override
-  void play() {
-    try {
-      loopSingleAudio(_pkgPath(path), volume: volume ?? 1);
-    } catch (_) {
-      // Silently ignore - audio failure must not crash the game loop.
-    }
-  }
-}
-
-class _SingleLoopAudio extends _LoopAudio {
-  _SingleLoopAudio({
-    required PreCacheSingleAudio preCacheSingleAudio,
-    required LoopSingleAudio loopSingleAudio,
-    required String path,
-    double? volume,
-  }) : super(
-          preCacheSingleAudio: preCacheSingleAudio,
-          loopSingleAudio: loopSingleAudio,
-          path: path,
-          volume: volume,
-        );
-
-  bool _playing = false;
-
-  @override
-  void play() {
-    if (!_playing) {
-      super.play();
-      _playing = true;
-    }
-  }
-}
-
-class _SingleAudioPool extends _Audio {
-  _SingleAudioPool({
-    required this.path,
-    required this.createAudioPool,
-    required this.maxPlayers,
-  });
-
-  final String path;
-  final CreateAudioPool createAudioPool;
-  final int maxPlayers;
-  late AudioPool pool;
-
-  @override
-  Future<void> load() async {
-    pool = await createAudioPool(
-      source: AssetSource(_pkgPath(path)),
-      maxPlayers: maxPlayers,
-      audioCache: FlameAudio.audioCache,
-    );
-  }
-
-  @override
-  void play() {
-    try {
-      pool.start();
-    } catch (_) {
-      // Silently ignore - audio failure must not crash the game loop.
-    }
-  }
-}
-
-class _RandomABAudio extends _Audio {
-  _RandomABAudio({
-    required this.createAudioPool,
-    required this.seed,
-    required this.audioAssetA,
-    required this.audioAssetB,
-    this.volume,
-  });
-
-  final CreateAudioPool createAudioPool;
-  final Random seed;
-  final String audioAssetA;
-  final String audioAssetB;
-  final double? volume;
-
-  late AudioPool audioA;
-  late AudioPool audioB;
-
-  @override
-  Future<void> load() async {
-    await Future.wait(
-      [
-        createAudioPool(
-          source: AssetSource(_pkgPath(audioAssetA)),
-          maxPlayers: 4,
-          audioCache: FlameAudio.audioCache,
-        ).then((pool) => audioA = pool),
-        createAudioPool(
-          source: AssetSource(_pkgPath(audioAssetB)),
-          maxPlayers: 4,
-          audioCache: FlameAudio.audioCache,
-        ).then((pool) => audioB = pool),
-      ],
-    );
-  }
-
-  @override
-  void play() {
-    try {
-      (seed.nextBool() ? audioA : audioB).start(volume: volume ?? 1);
-    } catch (_) {
-      // Silently ignore - audio failure must not crash the game loop.
-    }
-  }
-}
-
-class _ThrottledAudio extends _Audio {
-  _ThrottledAudio({
-    required this.preCacheSingleAudio,
-    required this.playSingleAudio,
-    required this.path,
-    required this.duration,
-  });
-
-  final PreCacheSingleAudio preCacheSingleAudio;
-  final PlaySingleAudio playSingleAudio;
-  final String path;
-  final Duration duration;
-
-  DateTime? _lastPlayed;
-
-  @override
-  Future<void> load() => preCacheSingleAudio(_pkgPath(path));
-
-  @override
-  void play() {
-    final now = clock.now();
-    if (_lastPlayed == null ||
-        (_lastPlayed != null && now.difference(_lastPlayed!) > duration)) {
-      _lastPlayed = now;
-      try {
-        playSingleAudio(_pkgPath(path));
-      } catch (_) {
-        // Silently ignore - audio failure must not crash the game loop.
-      }
-    }
-  }
-}
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
 
 /// {@template pinball_audio_player}
 /// Sound manager for the pinball game.
@@ -271,113 +222,58 @@ class _ThrottledAudio extends _Audio {
 class PinballAudioPlayer {
   /// {@macro pinball_audio_player}
   PinballAudioPlayer({
+    // These parameters exist only for test compatibility; the real
+    // implementation ignores them and uses raw JS Audio.
     CreateAudioPool? createAudioPool,
     PlaySingleAudio? playSingleAudio,
     LoopSingleAudio? loopSingleAudio,
     PreCacheSingleAudio? preCacheSingleAudio,
     ConfigureAudioCache? configureAudioCache,
     Random? seed,
-  })  : _createAudioPool = createAudioPool ?? AudioPool.create,
-        _playSingleAudio = playSingleAudio ?? FlameAudio.play,
-        _loopSingleAudio = loopSingleAudio ?? FlameAudio.loop,
-        _preCacheSingleAudio =
-            preCacheSingleAudio ?? FlameAudio.audioCache.load,
-        _configureAudioCache = configureAudioCache ??
-            ((AudioCache a) {
-              a.prefix = '';
-            }),
-        _seed = seed ?? Random() {
+  }) : _seed = seed ?? Random() {
     audios = {
-      PinballAudio.google: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
-        path: Assets.sfx.google,
-      ),
-      PinballAudio.sparky: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
-        path: Assets.sfx.sparky,
-      ),
+      PinballAudio.google: _SimpleAudio(path: Assets.sfx.google),
+      PinballAudio.sparky: _SimpleAudio(path: Assets.sfx.sparky),
       PinballAudio.dino: _ThrottledAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
         path: Assets.sfx.dino,
         duration: const Duration(seconds: 6),
       ),
-      PinballAudio.dash: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
-        path: Assets.sfx.dash,
-      ),
-      PinballAudio.android: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
-        path: Assets.sfx.android,
-      ),
-      PinballAudio.launcher: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
-        path: Assets.sfx.launcher,
-      ),
-      PinballAudio.rollover: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
+      PinballAudio.dash: _SimpleAudio(path: Assets.sfx.dash),
+      PinballAudio.android: _SimpleAudio(path: Assets.sfx.android),
+      PinballAudio.launcher: _SimpleAudio(path: Assets.sfx.launcher),
+      PinballAudio.rollover: _SimpleAudio(
         path: Assets.sfx.rollover,
         volume: 0.3,
       ),
-      PinballAudio.flipper: _SingleAudioPool(
-        path: Assets.sfx.flipper,
-        createAudioPool: _createAudioPool,
-        maxPlayers: 2,
-      ),
-      PinballAudio.ioPinballVoiceOver: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
+      PinballAudio.flipper: _SimpleAudio(path: Assets.sfx.flipper),
+      PinballAudio.ioPinballVoiceOver: _SimpleAudio(
         path: Assets.sfx.ioPinballVoiceOver,
       ),
-      PinballAudio.gameOverVoiceOver: _SimplePlayAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
+      PinballAudio.gameOverVoiceOver: _SimpleAudio(
         path: Assets.sfx.gameOverVoiceOver,
       ),
       PinballAudio.bumper: _RandomABAudio(
-        createAudioPool: _createAudioPool,
+        pathA: Assets.sfx.bumperA,
+        pathB: Assets.sfx.bumperB,
         seed: _seed,
-        audioAssetA: Assets.sfx.bumperA,
-        audioAssetB: Assets.sfx.bumperB,
         volume: 0.6,
       ),
       PinballAudio.kicker: _RandomABAudio(
-        createAudioPool: _createAudioPool,
+        pathA: Assets.sfx.kickerA,
+        pathB: Assets.sfx.kickerB,
         seed: _seed,
-        audioAssetA: Assets.sfx.kickerA,
-        audioAssetB: Assets.sfx.kickerB,
         volume: 0.6,
       ),
       PinballAudio.cowMoo: _ThrottledAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        playSingleAudio: _playSingleAudio,
         path: Assets.sfx.cowMoo,
         duration: const Duration(seconds: 2),
       ),
-      PinballAudio.backgroundMusic: _SingleLoopAudio(
-        preCacheSingleAudio: _preCacheSingleAudio,
-        loopSingleAudio: _loopSingleAudio,
+      PinballAudio.backgroundMusic: _LoopAudio(
         path: Assets.music.background,
-        volume: .6,
+        volume: 0.6,
       ),
     };
   }
-
-  final CreateAudioPool _createAudioPool;
-
-  final PlaySingleAudio _playSingleAudio;
-
-  final LoopSingleAudio _loopSingleAudio;
-
-  final PreCacheSingleAudio _preCacheSingleAudio;
-
-  final ConfigureAudioCache _configureAudioCache;
 
   final Random _seed;
 
@@ -398,8 +294,6 @@ class PinballAudioPlayer {
 
   /// Loads the sounds effects into the memory.
   List<Future<void> Function()> load() {
-    _configureAudioCache(FlameAudio.audioCache);
-
     return audios.values.map((a) => a.load).toList();
   }
 
@@ -409,9 +303,7 @@ class PinballAudioPlayer {
     try {
       audios[audio]?.play();
     } catch (_) {
-      // Silently ignore - audio failure must never crash the game loop.
-      // Contact callbacks (bumper, kicker, flipper) call this synchronously
-      // during physics steps; an unhandled throw here freezes the game.
+      // Silently ignore – audio failure must never crash the game loop.
     }
   }
 }

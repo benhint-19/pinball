@@ -26,30 +26,6 @@
       console.error('Unhandled Promise Rejection:', event.reason);
     };
   </script>
-  <script>
-    // Web Audio unlock: audioplayers_web creates a new AudioContext per player.
-    // Contexts created before user interaction start "suspended" (browser policy).
-    // Track all contexts and resume them on first user gesture.
-    (function() {
-      var _contexts = [];
-      var _Orig = window.AudioContext || window.webkitAudioContext;
-      if (!_Orig) return;
-      window.AudioContext = function AudioContext() {
-        var ctx = new _Orig();
-        _contexts.push(ctx);
-        return ctx;
-      };
-      window.AudioContext.prototype = _Orig.prototype;
-      function unlock() {
-        _contexts.forEach(function(c) {
-          if (c.state === 'suspended') c.resume();
-        });
-      }
-      ['click', 'touchstart', 'keydown'].forEach(function(e) {
-        document.addEventListener(e, unlock, { passive: true });
-      });
-    })();
-  </script>
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description"
     content="Seeker Pinball - A crypto-themed pinball game built with Flutter & Firebase.">
