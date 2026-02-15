@@ -73,10 +73,6 @@ typedef ConfigureAudioCache = void Function(AudioCache);
 abstract class _Audio {
   void play();
   Future<void> load();
-
-  String prefixFile(String file) {
-    return 'packages/pinball_audio/$file';
-  }
 }
 
 class _SimplePlayAudio extends _Audio {
@@ -93,11 +89,11 @@ class _SimplePlayAudio extends _Audio {
   final double? volume;
 
   @override
-  Future<void> load() => preCacheSingleAudio(prefixFile(path));
+  Future<void> load() => preCacheSingleAudio(path);
 
   @override
   void play() {
-    playSingleAudio(prefixFile(path), volume: volume ?? 1);
+    playSingleAudio(path, volume: volume ?? 1);
   }
 }
 
@@ -115,11 +111,11 @@ class _LoopAudio extends _Audio {
   final double? volume;
 
   @override
-  Future<void> load() => preCacheSingleAudio(prefixFile(path));
+  Future<void> load() => preCacheSingleAudio(path);
 
   @override
   void play() {
-    loopSingleAudio(prefixFile(path), volume: volume ?? 1);
+    loopSingleAudio(path, volume: volume ?? 1);
   }
 }
 
@@ -162,8 +158,9 @@ class _SingleAudioPool extends _Audio {
   @override
   Future<void> load() async {
     pool = await createAudioPool(
-      source: DeviceFileSource(prefixFile(path), mimeType: 'audio/mpeg'),
+      source: AssetSource(path),
       maxPlayers: maxPlayers,
+      audioCache: FlameAudio.audioCache,
     );
   }
 
@@ -194,14 +191,14 @@ class _RandomABAudio extends _Audio {
     await Future.wait(
       [
         createAudioPool(
-          source:
-              DeviceFileSource(prefixFile(audioAssetA), mimeType: 'audio/mpeg'),
+          source: AssetSource(audioAssetA),
           maxPlayers: 4,
+          audioCache: FlameAudio.audioCache,
         ).then((pool) => audioA = pool),
         createAudioPool(
-          source:
-              DeviceFileSource(prefixFile(audioAssetB), mimeType: 'audio/mpeg'),
+          source: AssetSource(audioAssetB),
           maxPlayers: 4,
+          audioCache: FlameAudio.audioCache,
         ).then((pool) => audioB = pool),
       ],
     );
@@ -229,7 +226,7 @@ class _ThrottledAudio extends _Audio {
   DateTime? _lastPlayed;
 
   @override
-  Future<void> load() => preCacheSingleAudio(prefixFile(path));
+  Future<void> load() => preCacheSingleAudio(path);
 
   @override
   void play() {
@@ -237,7 +234,7 @@ class _ThrottledAudio extends _Audio {
     if (_lastPlayed == null ||
         (_lastPlayed != null && now.difference(_lastPlayed!) > duration)) {
       _lastPlayed = now;
-      playSingleAudio(prefixFile(path));
+      playSingleAudio(path);
     }
   }
 }
@@ -261,7 +258,7 @@ class PinballAudioPlayer {
             preCacheSingleAudio ?? FlameAudio.audioCache.load,
         _configureAudioCache = configureAudioCache ??
             ((AudioCache a) {
-              a.prefix = '';
+              a.prefix = 'packages/pinball_audio/';
             }),
         _seed = seed ?? Random() {
     audios = {

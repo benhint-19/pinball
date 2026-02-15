@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js_interop';
 
 import 'package:authentication_repository/authentication_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -55,11 +54,7 @@ Future<App> bootstrap() async {
   );
 }
 
-@JS('console.log')
-external void _jsLog(JSString message);
-
 void main() async {
-  _jsLog('========== SEEKER PINBALL BUILD 2026-02-14-B =========='.toJS);
   Bloc.observer = AppBlocObserver();
   runApp(await bootstrap());
 }
