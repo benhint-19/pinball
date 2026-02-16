@@ -22,9 +22,23 @@ except ImportError:
     print("ERROR: Pillow not installed. Run: pip install Pillow")
     sys.exit(1)
 
-# Gemini API config
-API_KEY = "AIzaSyCLOcmfFw9R1e0qMu8V_BQDGOfHwcmTaUE"
-BACKUP_KEY = "AIzaSyClik2guz5ArqyQH_fGEzw7_UbRbmnkrD4"
+# Gemini API config — keys loaded from tools/.env or environment
+def _load_env():
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+
+_load_env()
+API_KEY = os.environ.get("GEMINI_API_KEY", "")
+BACKUP_KEY = os.environ.get("GEMINI_BACKUP_KEY", "")
+if not API_KEY:
+    print("ERROR: GEMINI_API_KEY not set. Add it to tools/.env or export it.")
+    sys.exit(1)
 API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent"
 
 ASSETS_DIR = os.path.join(
