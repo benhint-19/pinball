@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Vector2;
@@ -79,8 +78,6 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
   /// For each output pixel, stores (longitude, v) or null if outside.
   late List<List<_SurfacePoint?>> _projMap;
 
-  ui.Image? _cachedRender;
-  double _cachedAngle = -999;
 
   @override
   Future<void> onLoad() async {
@@ -179,51 +176,28 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
     _time += dt;
     _angle = (_angle + _spinSpeed * dt) % (2 * math.pi);
     position.y = -2.6 + math.sin(_time * _wobbleFreq) * _wobbleAmp;
+
+    // Select the closest frame for the current rotation angle.
+    _currentFrame = ((_angle / (2 * math.pi)) * _totalFrames).floor() % _totalFrames;
   }
 
-  /// Sample a pixel from the frame strip at a given longitude and v.
+  /// The current rotation angle selects which frame to show.
+  /// The surface longitude maps to the X position within that frame —
+  /// center of the cylinder = center of the image, edges = edges.
+  int _currentFrame = 0;
+
   int _sampleTexture(double lon, double v) {
-    // lon: -π..π, 0 = front. Map to frame index.
-    // Frames go 0=front, 1=45°left, ... 7=315°right.
-    var normLon = lon / (2 * math.pi); // -0.5..0.5
-    if (normLon < 0) normLon += 1.0;   // 0..1
-
-    final frameFrac = normLon * _totalFrames;
-    final frameA = frameFrac.floor() % _totalFrames;
-    final frameB = (frameA + 1) % _totalFrames;
-    final blend = frameFrac - frameFrac.floor();
-
-    // Texture Y coordinate.
+    // lon is already rotated: -π..π, 0 = facing camera.
+    // Map lon to horizontal position within the current frame.
+    // lon=0 → center of frame, lon=±visible_edge → edges of frame.
+    // The visible arc on a cylinder is about ±π/2 (90° each side).
+    // Map that to 0..frameW.
+    final visibleArc = math.pi * 0.55; // how much of the cylinder is visible
+    final nx = (lon / visibleArc).clamp(-1.0, 1.0); // -1..1
+    final tx = ((_frameW - 1) * (nx + 1.0) / 2.0).round().clamp(0, _frameW - 1);
     final ty = (v * (_frameH - 1)).round().clamp(0, _frameH - 1);
-    // Texture X: center column of each frame (we're sampling the "front"
-    // strip of each view, offset by the sub-frame longitude).
-    final subLon = (normLon * _totalFrames - frameA) - 0.5; // -0.5..0.5
-    final tx = ((_frameW / 2) + subLon * _frameW * 0.8)
-        .round()
-        .clamp(0, _frameW - 1);
 
-    final pixelA = _framePixels[frameA][ty][tx];
-    final pixelB = _framePixels[frameB][ty][tx];
-
-    // Alpha blend between adjacent frames.
-    if (blend < 0.15) return pixelA;
-    if (blend > 0.85) return pixelB;
-
-    return _blendPixels(pixelA, pixelB, blend);
-  }
-
-  int _blendPixels(int a, int b, double t) {
-    final aA = (a >> 24) & 0xFF, rA = (a >> 16) & 0xFF;
-    final gA = (a >> 8) & 0xFF, bA = a & 0xFF;
-    final aB = (b >> 24) & 0xFF, rB = (b >> 16) & 0xFF;
-    final gB = (b >> 8) & 0xFF, bB = b & 0xFF;
-
-    final alpha = (aA + (aB - aA) * t).round();
-    final red = (rA + (rB - rA) * t).round();
-    final green = (gA + (gB - gA) * t).round();
-    final blue = (bA + (bB - bA) * t).round();
-
-    return (alpha << 24) | (red << 16) | (green << 8) | blue;
+    return _framePixels[_currentFrame][ty][tx];
   }
 
   @override
