@@ -299,9 +299,15 @@ class PinballAudioPlayer {
   /// Whether audio playback is currently muted.
   bool get muted => _muted;
 
-  /// Toggles the mute state.
+  /// Toggles the mute state. Stops/resumes background music accordingly.
   void toggleMute() {
     _muted = !_muted;
+    final bg = audios[PinballAudio.backgroundMusic];
+    if (_muted) {
+      if (bg is _LoopAudio) bg.stop();
+    } else {
+      if (bg is _LoopAudio) bg.play();
+    }
   }
 
   /// Registered audios on the Player.
