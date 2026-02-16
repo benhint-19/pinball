@@ -41,6 +41,7 @@ extension PinballGameAssetsX on PinballGame {
       () => images.load(components.Assets.images.dino.solanaToken.keyName),
       () => images.load(components.Assets.images.solanaCoin.idle.keyName),
       () => images.load(components.Assets.images.solanaCoin.lit.keyName),
+      () => images.load(components.Assets.images.seekerPhone.retracted.keyName),
       () => images.load(components.Assets.images.android.mineshaft.keyName),
       () => images.load(components.Assets.images.dino.animatronic.head.keyName),
       () =>

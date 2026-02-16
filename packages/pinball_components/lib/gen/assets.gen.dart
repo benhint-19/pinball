@@ -440,12 +440,20 @@ class $AssetsImagesScoreGen {
 class $AssetsImagesSeekerPhoneGen {
   const $AssetsImagesSeekerPhoneGen();
 
+  /// File path: assets/images/seeker_phone/extended.png
+  AssetGenImage get extended =>
+      const AssetGenImage('assets/images/seeker_phone/extended.png');
+
+  /// File path: assets/images/seeker_phone/retracted.png
+  AssetGenImage get retracted =>
+      const AssetGenImage('assets/images/seeker_phone/retracted.png');
+
   /// File path: assets/images/seeker_phone/slide.png
   AssetGenImage get slide =>
       const AssetGenImage('assets/images/seeker_phone/slide.png');
 
   /// List of all assets
-  List<AssetGenImage> get values => [slide];
+  List<AssetGenImage> get values => [extended, retracted, slide];
 }
 
 class $AssetsImagesSignpostGen {
