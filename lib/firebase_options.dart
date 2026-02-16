@@ -53,11 +53,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: '',
-    appId: '',
-    messagingSenderId: '',
-    projectId: '',
-    authDomain: '',
-    storageBucket: '',
+    apiKey: 'AIzaSyDLm4qBh1hsM8y9YWl17pfPfshTYjrXv14',
+    appId: '1:547254971952:web:70df5f5f21f0196cd987f5',
+    messagingSenderId: '547254971952',
+    projectId: 'seeker-pinball',
+    authDomain: 'seeker-pinball.firebaseapp.com',
+    storageBucket: 'seeker-pinball.firebasestorage.app',
+    measurementId: 'G-1GE65PSJ0C',
   );
 }

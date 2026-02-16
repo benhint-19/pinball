@@ -21,7 +21,7 @@ service cloud.firestore {
       }
 
       function isValidCharacter(character) {
-         return character == 'android' || character == 'dash' || character == 'dino' || character == 'sparky';
+         return character == 'android' || character == 'dash' || character == 'dino' || character == 'sparky' || character == 'miner' || character == 'shiba' || character == 'degen' || character == 'dev';
        }
    
       // Leaderboard can be read if it doesn't contain any prohibited initials

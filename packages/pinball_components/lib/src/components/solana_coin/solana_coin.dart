@@ -9,15 +9,16 @@ import 'package:pinball_components/src/components/bumping_behavior.dart';
 import 'package:pinball_flame/pinball_flame.dart';
 
 /// {@template solana_coin}
-/// A 3D-rendered Solana coin in Flutter Forest / Shiba's Park.
-/// Bobs gently when idle, flips end-over-end when hit by the ball.
+/// A 3D Solana token hovering in Flutter Forest / Shiba's Park.
+/// Bobs gently when idle. Lights up when hit by the ball.
 /// {@endtemplate}
-class SolanaCoin extends BodyComponent with InitialPosition, ContactCallbacks, ZIndex {
+class SolanaCoin extends BodyComponent
+    with InitialPosition, ContactCallbacks, ZIndex {
   /// {@macro solana_coin}
   SolanaCoin({Iterable<Component>? children})
       : super(
           children: [
-            _SolanaCoinSprite(),
+            _SolanaCoinVisual(),
             BumpingBehavior(strength: 15),
             ...?children,
           ],
@@ -37,102 +38,65 @@ class SolanaCoin extends BodyComponent with InitialPosition, ContactCallbacks, Z
   @override
   void beginContact(Object other, Contact contact) {
     super.beginContact(other, contact);
-    final sprite = children.whereType<_SolanaCoinSprite>().firstOrNull;
-    sprite?.triggerFlip();
+    final visual = children.whereType<_SolanaCoinVisual>().firstOrNull;
+    visual?.triggerGlow();
   }
 }
 
-/// Manages idle bob + flip animation states for the coin.
-class _SolanaCoinSprite extends PositionComponent with HasGameRef {
-  _SolanaCoinSprite()
+class _SolanaCoinVisual extends PositionComponent with HasGameRef {
+  _SolanaCoinVisual()
       : super(
           anchor: Anchor.center,
           position: Vector2.zero(),
+          size: Vector2(10.0, 10.0),
         );
 
-  late final SpriteAnimationComponent _idleSprite;
-  late final SpriteAnimationComponent _flipSprite;
+  late final SpriteComponent _idleSprite;
+  late final SpriteComponent _litSprite;
 
   double _time = 0;
-  bool _flipping = false;
-  double _flipTimer = 0;
+  bool _glowing = false;
+  double _glowTimer = 0;
 
-  static const double _bobAmplitude = 0.3;
-  static const double _bobFrequency = 2.0;
-  static const double _flipDuration = 1.0; // seconds for full flip animation
+  static const double _bobAmplitude = 0.4;
+  static const double _bobFrequency = 1.5;
+  static const double _glowDuration = 0.8;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Load idle sprite sheet (4x1 grid, 200x200)
-    final idleSheet = gameRef.images.fromCache(
+    final idleImage = gameRef.images.fromCache(
       Assets.images.solanaCoin.idle.keyName,
     );
-    const idleCols = 4;
-    final idleFrameSize = Vector2(
-      idleSheet.width / idleCols,
-      idleSheet.height.toDouble(),
+    final litImage = gameRef.images.fromCache(
+      Assets.images.solanaCoin.lit.keyName,
     );
-    final displaySize = idleFrameSize / 15;
 
-    _idleSprite = SpriteAnimationComponent(
-      animation: SpriteAnimation.fromFrameData(
-        idleSheet,
-        SpriteAnimationData.sequenced(
-          amount: idleCols,
-          amountPerRow: idleCols,
-          stepTime: 0.25,
-          textureSize: idleFrameSize,
-        ),
-      ),
-      size: displaySize,
+    _idleSprite = SpriteComponent(
+      sprite: Sprite(idleImage),
+      size: size,
       anchor: Anchor.center,
-      playing: true,
+      position: Vector2(size.x / 2, size.y / 2),
     );
 
-    // Load flip sprite sheet (6x4 grid, 200x200)
-    final flipSheet = gameRef.images.fromCache(
-      Assets.images.solanaCoin.flip.keyName,
-    );
-    const flipCols = 6;
-    const flipRows = 4;
-    final flipFrameSize = Vector2(
-      flipSheet.width / flipCols,
-      flipSheet.height / flipRows,
-    );
-
-    _flipSprite = SpriteAnimationComponent(
-      animation: SpriteAnimation.fromFrameData(
-        flipSheet,
-        SpriteAnimationData.sequenced(
-          amount: flipCols * flipRows,
-          amountPerRow: flipCols,
-          stepTime: _flipDuration / (flipCols * flipRows),
-          textureSize: flipFrameSize,
-          loop: false,
-        ),
-      ),
-      size: displaySize,
+    _litSprite = SpriteComponent(
+      sprite: Sprite(litImage),
+      size: size,
       anchor: Anchor.center,
-      playing: false,
-    );
+      position: Vector2(size.x / 2, size.y / 2),
+    )..opacity = 0;
 
-    size = displaySize;
     await add(_idleSprite);
-    await add(_flipSprite);
-    _flipSprite.opacity = 0;
+    await add(_litSprite);
   }
 
-  /// Trigger the flip animation (called on ball contact).
-  void triggerFlip() {
-    if (_flipping) return;
-    _flipping = true;
-    _flipTimer = 0;
+  void triggerGlow() {
+    if (_glowing) return;
+    _glowing = true;
+    _glowTimer = 0;
+    _litSprite.opacity = 1;
     _idleSprite.opacity = 0;
-    _flipSprite.opacity = 1;
-    _flipSprite.animationTicker?.reset();
-    _flipSprite.playing = true;
   }
 
   @override
@@ -140,24 +104,22 @@ class _SolanaCoinSprite extends PositionComponent with HasGameRef {
     super.update(dt);
     _time += dt;
 
-    if (_flipping) {
-      _flipTimer += dt;
-      // Rise and fall during flip
-      final t = _flipTimer / _flipDuration;
-      position.y = -3.0 * math.sin(t * math.pi);
-
-      if (_flipTimer >= _flipDuration) {
-        _flipping = false;
-        _flipTimer = 0;
-        _flipSprite.playing = false;
-        _flipSprite.opacity = 0;
+    if (_glowing) {
+      _glowTimer += dt;
+      if (_glowTimer >= _glowDuration) {
+        _glowing = false;
+        _glowTimer = 0;
+        _litSprite.opacity = 0;
         _idleSprite.opacity = 1;
-        position.y = 0;
+      } else {
+        // Pulse the lit sprite opacity.
+        final t = _glowTimer / _glowDuration;
+        _litSprite.opacity = 1.0 - t * t; // fade out
+        _idleSprite.opacity = t * t;
       }
-    } else {
-      // Gentle bob
-      position.y = math.sin(_time * _bobFrequency * 2 * math.pi) * _bobAmplitude;
     }
+
+    // Gentle bob.
+    position.y = math.sin(_time * _bobFrequency * 2 * math.pi) * _bobAmplitude;
   }
 }
-

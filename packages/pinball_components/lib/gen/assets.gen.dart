@@ -520,8 +520,12 @@ class $AssetsImagesSolanaCoinGen {
   AssetGenImage get idle =>
       const AssetGenImage('assets/images/solana_coin/idle.png');
 
+  /// File path: assets/images/solana_coin/lit.png
+  AssetGenImage get lit =>
+      const AssetGenImage('assets/images/solana_coin/lit.png');
+
   /// List of all assets
-  List<AssetGenImage> get values => [flip, idle];
+  List<AssetGenImage> get values => [flip, idle, lit];
 }
 
 class $AssetsImagesSparkyGen {
