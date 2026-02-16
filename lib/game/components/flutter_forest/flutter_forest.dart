@@ -21,7 +21,7 @@ class FlutterForest extends Component with ZIndex {
               children: [
                 ScoringContactBehavior(points: Points.twoHundredThousand),
               ],
-            )..initialPosition = Vector2(16, -55),
+            )..initialPosition = Vector2(20, -66),
             FlameMultiBlocProvider(
               providers: [
                 FlameBlocProvider<SignpostCubit, SignpostState>(
