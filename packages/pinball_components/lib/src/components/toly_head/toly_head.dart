@@ -10,9 +10,9 @@ import 'package:pinball_components/src/components/bumping_behavior.dart';
 import 'package:pinball_flame/pinball_flame.dart';
 
 /// {@template toly_head}
-/// Spinning 3D head of Anatoly Yakovenko (Toly), founder of Solana.
-/// AI-generated frames mapped onto a cylinder+dome surface with protruding
-/// hat brim. Rotates around the Y axis.
+/// Static 3D head of Anatoly Yakovenko (Toly), founder of Solana.
+/// Front-facing cartoon mapped onto a cylinder+dome surface.
+/// Wobbles when hit by the ball via [BumpingBehavior].
 /// {@endtemplate}
 class TolyHead extends BodyComponent with InitialPosition, Layered, ZIndex {
   /// {@macro toly_head}
@@ -42,17 +42,11 @@ class TolyHead extends BodyComponent with InitialPosition, Layered, ZIndex {
 }
 
 // ============================================================================
-// 3D cylinder+dome renderer that samples from AI-generated sprite frames
+// 3D cylinder+dome renderer — static front-facing image with depth shading
 // ============================================================================
 
-/// Resolution of the 3D render output.
 const int _outW = 80;
 const int _outH = 96;
-
-/// Number of key frames in the sprite sheet.
-const int _sheetCols = 8;
-const int _sheetRows = 4;
-const int _totalFrames = _sheetCols * _sheetRows;
 
 class _TolyHead3D extends PositionComponent with HasGameRef {
   _TolyHead3D()
@@ -62,22 +56,13 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
           size: Vector2(12.0, 14.4),
         );
 
-  double _angle = 0;
-  double _time = 0;
-
-  static const double _spinSpeed = 1.5;
-  static const double _wobbleAmp = 0.12;
-  static const double _wobbleFreq = 4.0;
-
-  /// Pixel data extracted from each sprite frame: [frameIndex][y][x] = color.
-  late List<List<List<int>>> _framePixels;
+  /// Front-facing frame pixel data: [y][x] = ARGB color.
+  late List<List<int>> _pixels;
   late int _frameW;
   late int _frameH;
 
   /// Pre-computed cylinder+dome projection map.
-  /// For each output pixel, stores (longitude, v) or null if outside.
   late List<List<_SurfacePoint?>> _projMap;
-
 
   @override
   Future<void> onLoad() async {
@@ -87,30 +72,25 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
       Assets.images.android.spaceship.tolyHead.keyName,
     );
 
-    _frameW = spriteSheet.width ~/ _sheetCols;
-    _frameH = spriteSheet.height ~/ _sheetRows;
+    // Use only the first frame (top-left cell = front view).
+    final sheetCols = 8;
+    _frameW = spriteSheet.width ~/ sheetCols;
+    _frameH = spriteSheet.height ~/ 4;
 
-    // Extract pixel data from each frame.
     final sheetData = await spriteSheet.toByteData(
       format: ui.ImageByteFormat.rawRgba,
     );
     if (sheetData == null) return;
 
-    _framePixels = List.generate(_totalFrames, (i) {
-      final col = i % _sheetCols;
-      final row = i ~/ _sheetCols;
-      final xOff = col * _frameW;
-      final yOff = row * _frameH;
-
-      return List.generate(_frameH, (y) {
-        return List.generate(_frameW, (x) {
-          final idx = ((yOff + y) * spriteSheet.width + (xOff + x)) * 4;
-          final r = sheetData.getUint8(idx);
-          final g = sheetData.getUint8(idx + 1);
-          final b = sheetData.getUint8(idx + 2);
-          final a = sheetData.getUint8(idx + 3);
-          return (a << 24) | (r << 16) | (g << 8) | b;
-        });
+    // Extract just frame 0 (top-left).
+    _pixels = List.generate(_frameH, (y) {
+      return List.generate(_frameW, (x) {
+        final idx = (y * spriteSheet.width + x) * 4;
+        final r = sheetData.getUint8(idx);
+        final g = sheetData.getUint8(idx + 1);
+        final b = sheetData.getUint8(idx + 2);
+        final a = sheetData.getUint8(idx + 3);
+        return (a << 24) | (r << 16) | (g << 8) | b;
       });
     });
 
@@ -123,47 +103,33 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
       (_) => List<_SurfacePoint?>.filled(_outW, null),
     );
 
-    // The shape: cylinder body (bottom 65%) + dome cap (top 35%).
-    const domeStart = 0.0;  // top of output
-    const domeFrac = 0.35;  // dome takes top 35%
-    const cylEnd = 1.0;     // cylinder goes to bottom
-    final domeEndY = _outH * domeFrac;
+    const domeFrac = 0.35;
 
     for (var py = 0; py < _outH; py++) {
-      final fv = py / (_outH - 1); // 0=top, 1=bottom
+      final fv = py / (_outH - 1);
 
       for (var px = 0; px < _outW; px++) {
-        // Horizontal: -1 to 1
         final nx = (px / (_outW - 1)) * 2.0 - 1.0;
 
-        double lon;  // longitude in radians, 0 = front
-        double ez;   // z-depth for shading
-        double texV; // vertical texture coordinate 0..1
+        double lon;
+        double ez;
 
         if (fv < domeFrac) {
-          // --- DOME (hemisphere cap) ---
-          final domeNy = 1.0 - (fv / domeFrac); // 1=top, 0=equator
-
-          // Dome radius narrows toward the top.
+          // Dome cap.
+          final domeNy = 1.0 - (fv / domeFrac);
           final domeRadius = math.sqrt(math.max(0, 1.0 - domeNy * domeNy));
           final ex = nx / math.max(domeRadius, 0.01);
-
-          if (ex.abs() > 1.0) continue; // outside dome silhouette
-
+          if (ex.abs() > 1.0) continue;
           ez = math.sqrt(math.max(0, 1.0 - ex * ex));
           lon = math.atan2(ex, ez);
-          texV = fv / 1.0; // map dome to top portion of texture
         } else {
-          // --- CYLINDER body ---
-          // Cylinder has constant radius.
+          // Cylinder body.
           if (nx.abs() > 1.0) continue;
-
           ez = math.sqrt(math.max(0, 1.0 - nx * nx));
           lon = math.atan2(nx, ez);
-          texV = fv;
         }
 
-        map[py][px] = _SurfacePoint(lon, texV, ez);
+        map[py][px] = _SurfacePoint(lon, fv, ez);
       }
     }
 
@@ -171,46 +137,14 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
   }
 
   @override
-  void update(double dt) {
-    super.update(dt);
-    _time += dt;
-    _angle = (_angle + _spinSpeed * dt) % (2 * math.pi);
-    position.y = -2.6 + math.sin(_time * _wobbleFreq) * _wobbleAmp;
-
-    // Select the closest frame for the current rotation angle.
-    _currentFrame = ((_angle / (2 * math.pi)) * _totalFrames).floor() % _totalFrames;
-  }
-
-  /// The current rotation angle selects which frame to show.
-  /// The surface longitude maps to the X position within that frame —
-  /// center of the cylinder = center of the image, edges = edges.
-  int _currentFrame = 0;
-
-  int _sampleTexture(double lon, double v) {
-    // lon is already rotated: -π..π, 0 = facing camera.
-    // Map lon to horizontal position within the current frame.
-    // lon=0 → center of frame, lon=±visible_edge → edges of frame.
-    // The visible arc on a cylinder is about ±π/2 (90° each side).
-    // Map that to 0..frameW.
-    final visibleArc = math.pi * 0.55; // how much of the cylinder is visible
-    final nx = (lon / visibleArc).clamp(-1.0, 1.0); // -1..1
-    final tx = ((_frameW - 1) * (nx + 1.0) / 2.0).round().clamp(0, _frameW - 1);
-    final ty = (v * (_frameH - 1)).round().clamp(0, _frameH - 1);
-
-    return _framePixels[_currentFrame][ty][tx];
-  }
-
-  @override
   void render(Canvas canvas) {
     super.render(canvas);
-    if (_framePixels.isEmpty) return;
+    if (_pixels.isEmpty) return;
 
     final w = size.x;
     final h = size.y;
     final pxW = w / _outW;
     final pxH = h / _outH;
-
-    // Draw cylinder+dome surface.
     final paint = Paint()..isAntiAlias = false;
 
     for (var py = 0; py < _outH; py++) {
@@ -218,19 +152,22 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
         final sp = _projMap[py][px];
         if (sp == null) continue;
 
-        // Apply current rotation.
-        var lon = sp.lon + _angle;
-        while (lon > math.pi) lon -= 2 * math.pi;
-        while (lon < -math.pi) lon += 2 * math.pi;
+        // Map surface longitude to frame X: lon=0 → center, ±visible → edges.
+        final visibleArc = math.pi * 0.55;
+        final normX = (sp.lon / visibleArc).clamp(-1.0, 1.0);
+        final tx = ((_frameW - 1) * (normX + 1.0) / 2.0)
+            .round()
+            .clamp(0, _frameW - 1);
+        final ty = (sp.texV * (_frameH - 1)).round().clamp(0, _frameH - 1);
 
-        final pixel = _sampleTexture(lon, sp.texV);
+        final pixel = _pixels[ty][tx];
         final alpha = (pixel >> 24) & 0xFF;
         if (alpha < 10) continue;
 
-        // Shading: darken edges for 3D depth.
-        var lonFromFront = lon.abs();
-        if (lonFromFront > math.pi) lonFromFront = 2 * math.pi - lonFromFront;
-        final angleFade = 1.0 - (lonFromFront / (math.pi * 0.6)).clamp(0, 1) * 0.55;
+        // 3D shading: darken edges.
+        final lonAbs = sp.lon.abs();
+        final angleFade =
+            1.0 - (lonAbs / (math.pi * 0.6)).clamp(0.0, 1.0) * 0.5;
         final depthFade = 0.75 + 0.25 * sp.ez;
         final shade = angleFade * depthFade;
 
@@ -252,66 +189,37 @@ class _TolyHead3D extends PositionComponent with HasGameRef {
       }
     }
 
-    // --- HAT BRIM ---
+    // Hat brim.
     _drawHatBrim(canvas, w, h);
 
-    // --- Solana glow ring at base ---
-    _drawGlowRing(canvas, w / 2, h * 0.92, w * 0.4, _angle);
+    // Solana glow ring at base.
+    _drawGlowRing(canvas, w / 2, h * 0.92, w * 0.4);
   }
 
   void _drawHatBrim(Canvas canvas, double w, double h) {
-    // The brim sits at ~28% from top, protrudes forward.
     final brimY = h * 0.28;
-    final brimWidth = w * 0.65;
+    final brimWidth = w * 0.7;
+    final brimDepth = w * 0.13;
+    final cx = w / 2;
 
-    // Brim depth varies with rotation: max when facing camera, min at sides.
-    var frontness = math.cos(_angle); // 1=front, -1=back
-    // Brim visible width based on facing direction.
-    final brimDepth = w * 0.12 * frontness.abs();
+    final brimPath = Path()
+      ..moveTo(cx - brimWidth / 2, brimY)
+      ..quadraticBezierTo(cx, brimY + brimDepth * 1.5, cx + brimWidth / 2, brimY)
+      ..quadraticBezierTo(cx, brimY + brimDepth * 0.3, cx - brimWidth / 2, brimY)
+      ..close();
 
-    // Brim shifts left/right based on rotation.
-    final brimShift = math.sin(_angle) * w * 0.15;
-    final cx = w / 2 + brimShift;
-
-    if (frontness > 0.1) {
-      // Facing camera: brim protrudes downward.
-      final brimPath = Path()
-        ..moveTo(cx - brimWidth / 2, brimY)
-        ..quadraticBezierTo(cx, brimY + brimDepth * 1.5, cx + brimWidth / 2, brimY)
-        ..quadraticBezierTo(cx, brimY + brimDepth * 0.3, cx - brimWidth / 2, brimY)
-        ..close();
-
-      canvas.drawPath(
-        brimPath,
-        Paint()..color = const Color(0xFF1A1A2E),
-      );
-      // Brim edge highlight.
-      canvas.drawPath(
-        brimPath,
-        Paint()
-          ..color = const Color(0xFF2A2A4E)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = w * 0.015,
-      );
-    } else if (frontness < -0.1) {
-      // Facing away: brim protrudes upward (we see underside).
-      final brimPath = Path()
-        ..moveTo(cx - brimWidth / 2, brimY)
-        ..quadraticBezierTo(cx, brimY - brimDepth * 1.2, cx + brimWidth / 2, brimY)
-        ..quadraticBezierTo(cx, brimY - brimDepth * 0.2, cx - brimWidth / 2, brimY)
-        ..close();
-
-      canvas.drawPath(
-        brimPath,
-        Paint()..color = const Color(0xFF121222),
-      );
-    }
-    // At profile angles, brim is edge-on and barely visible — skip drawing.
+    canvas.drawPath(brimPath, Paint()..color = const Color(0xFF1A1A2E));
+    canvas.drawPath(
+      brimPath,
+      Paint()
+        ..color = const Color(0xFF2A2A4E)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * 0.015,
+    );
   }
 }
 
-void _drawGlowRing(
-    Canvas canvas, double cx, double cy, double r, double angle) {
+void _drawGlowRing(Canvas canvas, double cx, double cy, double r) {
   final ringPaint = Paint()
     ..style = PaintingStyle.stroke
     ..strokeWidth = r * 0.08
@@ -323,9 +231,6 @@ void _drawGlowRing(
         const Color(0xFF9945FF),
       ],
       [0.0, 0.5, 1.0],
-      TileMode.clamp,
-      angle,
-      angle + 2 * math.pi,
     );
   canvas.drawOval(
     Rect.fromCenter(
